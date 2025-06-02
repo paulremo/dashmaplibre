@@ -11,8 +11,9 @@
 
 \usage{
 ''DashMaplibre(id=NULL, bearing=NULL, center=NULL, colorbar_map=NULL,
-colorbar_risk=NULL, layers=NULL, pitch=NULL, sources=NULL,
-style=NULL, styleUrl=NULL, zoom=NULL)
+colorbar_risk=NULL, hover_html=NULL, hover_layer=NULL,
+layers=NULL, pitch=NULL, sources=NULL, style=NULL,
+styleUrl=NULL, zoom=NULL)
 }
 
 \arguments{
@@ -25,6 +26,10 @@ style=NULL, styleUrl=NULL, zoom=NULL)
 \item{colorbar_map}{Named list. }
 
 \item{colorbar_risk}{Named list. }
+
+\item{hover_html}{Character. }
+
+\item{hover_layer}{Character. }
 
 \item{layers}{Unnamed list. }
 

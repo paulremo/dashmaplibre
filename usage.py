@@ -11,7 +11,7 @@ base_geojson = {
         {
             "type": "Feature",
             "geometry": {"type": "Point", "coordinates": [13.404954, 52.520008]},
-            "properties": {"name": "City"}
+            "properties": {"name": "City", "risk": 123, "prob": 0.4, "volume": 1231, "zweck_coarse": 4, "stoerfall_str": "Ja"}
         }
     ]
 }
@@ -63,6 +63,15 @@ app.layout = html.Div([
                 }
             }
         ],
+        hover_layer="points",
+        hover_html=(
+            "<strong>{name}</strong><br/>"
+            "Risiko: {risk}<br/>"
+            "Wahrscheinlichkeit: {prob}<br/>"
+            "Volumen: {volume}<br/>"
+            "Zweck: {zweck_coarse}<br/>"
+            "Störfall: {stoerfall_str}"
+        ),
         colorbar_map={
             "stops": {0: ["#00f", "#66f"], 50: ["#6f6", "#ef0"], 100: ["#f00", "#f88"]},
             "title": "Map info",

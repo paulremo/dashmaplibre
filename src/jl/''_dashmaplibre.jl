@@ -13,6 +13,8 @@ Keyword arguments:
 - `center` (Array; optional)
 - `colorbar_map` (Dict; optional)
 - `colorbar_risk` (Dict; optional)
+- `hover_html` (String; optional)
+- `hover_layer` (String; optional)
 - `layers` (Array; optional)
 - `pitch` (Real; optional)
 - `sources` (Dict; optional)
@@ -21,7 +23,7 @@ Keyword arguments:
 - `zoom` (Real; optional)
 """
 function ''_dashmaplibre(; kwargs...)
-        available_props = Symbol[:id, :bearing, :center, :colorbar_map, :colorbar_risk, :layers, :pitch, :sources, :style, :styleUrl, :zoom]
+        available_props = Symbol[:id, :bearing, :center, :colorbar_map, :colorbar_risk, :hover_html, :hover_layer, :layers, :pitch, :sources, :style, :styleUrl, :zoom]
         wild_props = Symbol[]
         return Component("''_dashmaplibre", "DashMaplibre", "dash_maplibre", available_props, wild_props; kwargs...)
 end

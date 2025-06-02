@@ -9,6 +9,12 @@ const areLayersEqual = (layerA, layerB) => {
     return JSON.stringify(layerA) === JSON.stringify(layerB);
 };
 
+function interpolateTemplate(template, props) {
+    return template.replace(/\{(\w+)\}/g, (match, key) =>
+        props[key] !== undefined ? props[key] : ''
+    );
+}
+
 const D3Colorbar = ({
     stops,
     title,
@@ -138,6 +144,8 @@ const DashMaplibre = ({
     style = {},
     colorbar_map = {},
     colorbar_risk = {},
+    hover_layer = "",
+    hover_html = "",
     setProps,
     ...otherProps    
 }) => {
@@ -258,6 +266,42 @@ const DashMaplibre = ({
         prevLayersRef.current = layers;
 
     }, [layers]);
+
+    // hover popup
+    useEffect(() => {
+        if (!mapRef.current) return;
+        const map = mapRef.current;
+        let popup = new maplibregl.Popup({ closeButton: false, closeOnClick: false });
+        const hoverLayerId = hover_layer;
+
+        function onMouseEnter(e) {
+            map.getCanvas().style.cursor = 'pointer';
+            const feature = e.features[0];
+            const props = feature.properties;
+            let html = interpolateTemplate(hover_html, props);
+            popup.setLngLat(feature.geometry.coordinates).setHTML(html).addTo(map);
+        }
+        function onMouseLeave() {
+            map.getCanvas().style.cursor = '';
+            popup.remove();
+        }
+        function attachListeners() {
+            if (!map.getLayer(hoverLayerId)) return;
+            map.on('mouseenter', hoverLayerId, onMouseEnter);
+            map.on('mouseleave', hoverLayerId, onMouseLeave);
+        }
+        if (map.isStyleLoaded()) attachListeners();
+        else map.on('load', attachListeners);
+
+        // Clean up
+        return () => {
+            if (map.getLayer(hoverLayerId)) {
+                map.off('mouseenter', hoverLayerId, onMouseEnter);
+                map.off('mouseleave', hoverLayerId, onMouseLeave);
+            }
+            popup.remove();
+        };
+    }, [sources, layers]);
     
     return (
         <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", ...style }}>
@@ -289,6 +333,8 @@ DashMaplibre.propTypes = {
     style: PropTypes.object,
     colorbar_map: PropTypes.object,
     colorbar_risk: PropTypes.object,
+    hover_layer: PropTypes.string,
+    hover_html: PropTypes.string,
     setProps: PropTypes.func,
 };
 
