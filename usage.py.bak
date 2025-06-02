@@ -1,0 +1,61 @@
+import dash
+from dash import html
+from dash_maplibre import DashMaplibre
+
+app = dash.Dash(__name__)
+
+# Minimal GeoJSON for demo
+geojson_data = {
+    "type": "FeatureCollection",
+    "features": [
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [13.404954, 52.520008]
+            },
+            "properties": {"name": "Berlin"}
+        }
+    ]
+}
+
+app.layout = html.Div([
+    html.H1("Dash MapLibre Demo"),
+    DashMaplibre(
+        id="my-map",
+        styleUrl="https://demotiles.maplibre.org/style.json",
+        center=[13.404954, 52.520008],
+        zoom=10,
+        sources={
+            "my-points": {
+                "type": "geojson",
+                "data": geojson_data
+            }
+        },
+        layers=[
+            {
+                "id": "points",
+                "type": "circle",
+                "source": "my-points",
+                "paint": {
+                    "circle-radius": 8,
+                    "circle-color": "#007cbf"
+                }
+            }
+        ],
+        colorbar_map={
+            "stops": {0: ["#00f", "#66f"], 50: ["#6f6", "#ef0"], 100: ["#f00", "#f88"]},
+            "title": "Map infro",
+            "labels": {"0": "Low", "1": "High", "0.5": "Medium"}
+        },
+        colorbar_risk={
+            "stops": {0: ["#fff", "#ccc"], 1: ["#000", "#333"]},
+            "title": "Risk",
+            "labels": {"0": "Poor", "1": "Excellent"}
+        },
+        style={"width": "800px", "height": "500px"}
+    )
+])
+
+if __name__ == '__main__':
+    app.run(debug=True)
