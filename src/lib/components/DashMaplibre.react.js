@@ -364,76 +364,103 @@ const DashMaplibre = ({
     }, [center, zoom, bearing, pitch]);
 
     return (
-        <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", ...style 
-                    }} id={id}>
-            <div style={{ display: "flex", flexDirection: "row", gap: 24, justifyContent: "center", margin: "0 8px" }}>
-                {colorbar_map && <Colorbar {...colorbar_map} />}
-                {colorbar_risk && <Colorbar {...colorbar_risk} />}
-            </div>
-            <div style={{ flex: 1, minHeight: 0, minWidth: 0, position: "relative" }}>
-                {/* Legend container */}
-                {legendLayers.length > 0 && (
-                    <div style={{
-                        position: "absolute",
-                        top: 0,
-                        left: 0,
-                        background: "#fff",
-                        padding: 12,
-                        borderRadius: 0,
-                        zIndex: 10,
-                        boxShadow: "0 2px 8px rgba(0,0,0,0.13)",
-                        minWidth: 120
-                    }}>
-                        {legendLayers.map(layer => {
-                            // Try to find the color from paint
-                            let color =
-                                layer.paint?.["circle-color"] ||
-                                layer.paint?.["fill-color"] ||
-                                layer.paint?.["line-color"] ||
-                                "#ccc";
-                            // If color is an array (expression), fallback to gray or improve extraction
-                            if (Array.isArray(color)) { color = "#ccc"; }
-                            return (
-                                <div
-                                    key={layer.id}
-                                    style={{
-                                        display: "flex",
-                                        alignItems: "center",
-                                        cursor: "pointer",
-                                        fontWeight: "normal",
-                                        opacity: visibleLayers.includes(layer.id) ? 1 : 0.5,
-                                        marginBottom: 5,
-                                        userSelect: "none"
-                                    }}
-                                    onClick={() => {
-                                        setVisibleLayers(vs =>
-                                            vs.includes(layer.id)
-                                                ? vs.filter(id => id !== layer.id)
-                                                : [...vs, layer.id]
-                                        );
-                                    }}
-                                    title={layer.id}
-                                >
-                                    {/* Swatch */}
-                                    <span style={{
-                                        display: "inline-block",
-                                        width: 16,
-                                        height: 16,
-                                        borderRadius: 8,
-                                        marginRight: 10,
-                                        background: color,
-                                        border: "1px solid #999"
-                                    }} />
-                                    <span>{layer.display_name}</span>
-                                </div>
-                            );
-                        })}
-                    </div>)}
+        <div
+            style={{
+                width: "100%",
+                height: "100%",
+                display: "flex",
+                flexDirection: "column",
+                ...style
+            }}
+            id={id}
+        >
+            <div style={{ flex: 1, minHeight: 0, minWidth: 0, position: "relative", display: "flex", flexDirection: "column" }}>
+                {/* Colorbars always matching map width */}
+                <div
+                    style={{
+                        display: "flex",
+                        flexDirection: "row",
+                        gap: 24,
+                        width: "100%",
+                        maxWidth: "100%",
+                        alignItems: "stretch"
+                    }}
+                >
+                    {colorbar_map && (
+                        <div style={{ flex: "1 1 0", minWidth: 0, padding: "0 8px"}}>
+                            <Colorbar {...colorbar_map} />
+                        </div>
+                    )}
+                    {colorbar_risk && (
+                        <div style={{ flex: "1 1 0", minWidth: 0, padding: "0 8px" }}>
+                            <Colorbar {...colorbar_risk} />
+                        </div>
+                    )}
+                </div>
                 {/* Map container */}
                 <div
                     ref={mapContainer}
-                    style={{ width: "100%", height: "100%"}}
-                />
+                    style={{ width: "100%", height: "100%", flex: 1, minHeight: 0, minWidth: 0, position: "relative" }}
+                >
+                    {/* Legend container */}
+                    {legendLayers.length > 0 && (
+                        <div style={{
+                            position: "absolute",
+                            top: 0,
+                            left: 0,
+                            background: "#fff",
+                            padding: 12,
+                            borderRadius: 0,
+                            zIndex: 10,
+                            boxShadow: "0 2px 8px rgba(0,0,0,0.13)",
+                            minWidth: 120
+                        }}>
+                            {legendLayers.map(layer => {
+                                // Try to find the color from paint
+                                let color =
+                                    layer.paint?.["circle-color"] ||
+                                    layer.paint?.["fill-color"] ||
+                                    layer.paint?.["line-color"] ||
+                                    "#ccc";
+                                // If color is an array (expression), fallback to gray or improve extraction
+                                if (Array.isArray(color)) { color = "#ccc"; }
+                                return (
+                                    <div
+                                        key={layer.id}
+                                        style={{
+                                            display: "flex",
+                                            alignItems: "center",
+                                            cursor: "pointer",
+                                            fontWeight: "normal",
+                                            opacity: visibleLayers.includes(layer.id) ? 1 : 0.5,
+                                            marginBottom: 5,
+                                            userSelect: "none"
+                                        }}
+                                        onClick={() => {
+                                            setVisibleLayers(vs =>
+                                                vs.includes(layer.id)
+                                                    ? vs.filter(id => id !== layer.id)
+                                                    : [...vs, layer.id]
+                                            );
+                                        }}
+                                        title={layer.id}
+                                    >
+                                        {/* Swatch */}
+                                        <span style={{
+                                            display: "inline-block",
+                                            width: 16,
+                                            height: 16,
+                                            borderRadius: 8,
+                                            marginRight: 10,
+                                            background: color,
+                                            border: "1px solid #999"
+                                        }} />
+                                        <span>{layer.display_name}</span>
+                                    </div>
+                                );
+                            })}
+                        </div>)}
+                </div>
             </div>
         </div>
     );
