@@ -66,6 +66,7 @@ const DashMaplibre = ({
     const prevLayersRef = useRef([]);
     const [visibleLayers, setVisibleLayers] = useState(() => layers.filter(l => l.display_name).map(l => l.id));
     const savedViewRef = useRef({ center, zoom });
+    const legendLayers = layers.filter(l => l.display_name);
 
     // Initialize map
     useEffect(() => {
@@ -363,74 +364,75 @@ const DashMaplibre = ({
     }, [center, zoom, bearing, pitch]);
 
     return (
-        <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", ...style }}>
+        <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", ...style 
+                    }} id={id}>
             <div style={{ display: "flex", flexDirection: "row", gap: 24, justifyContent: "center", margin: "0 8px" }}>
                 {colorbar_map && <Colorbar {...colorbar_map} />}
                 {colorbar_risk && <Colorbar {...colorbar_risk} />}
             </div>
             <div style={{ flex: 1, minHeight: 0, minWidth: 0, position: "relative" }}>
-                {/* Legend container - now absolute top left, sharp edges */}
-                <div style={{
-                    position: "absolute",
-                    top: 0,
-                    left: 0,
-                    background: "#fff",
-                    padding: 12,
-                    borderRadius: 0,
-                    zIndex: 10,
-                    boxShadow: "0 2px 8px rgba(0,0,0,0.13)",
-                    minWidth: 120
-                }}>
-                    {layers.filter(l => l.display_name).map(layer => {
-                        // Try to find the color from paint
-                        let color =
-                            layer.paint?.["circle-color"] ||
-                            layer.paint?.["fill-color"] ||
-                            layer.paint?.["line-color"] ||
-                            "#ccc";
-                        // If color is an array (expression), fallback to gray or improve extraction
-                        if (Array.isArray(color)) { color = "#ccc"; }
-                        return (
-                            <div
-                                key={layer.id}
-                                style={{
-                                    display: "flex",
-                                    alignItems: "center",
-                                    cursor: "pointer",
-                                    fontWeight: "normal",
-                                    opacity: visibleLayers.includes(layer.id) ? 1 : 0.5,
-                                    marginBottom: 5,
-                                    userSelect: "none"
-                                }}
-                                onClick={() => {
-                                    setVisibleLayers(vs =>
-                                        vs.includes(layer.id)
-                                            ? vs.filter(id => id !== layer.id)
-                                            : [...vs, layer.id]
-                                    );
-                                }}
-                                title={layer.id}
-                            >
-                                {/* Swatch */}
-                                <span style={{
-                                    display: "inline-block",
-                                    width: 16,
-                                    height: 16,
-                                    borderRadius: 8,
-                                    marginRight: 10,
-                                    background: color,
-                                    border: "1px solid #999"
-                                }} />
-                                <span>{layer.display_name}</span>
-                            </div>
-                        );
-                    })}
-                </div>
+                {/* Legend container */}
+                {legendLayers.length > 0 && (
+                    <div style={{
+                        position: "absolute",
+                        top: 0,
+                        left: 0,
+                        background: "#fff",
+                        padding: 12,
+                        borderRadius: 0,
+                        zIndex: 10,
+                        boxShadow: "0 2px 8px rgba(0,0,0,0.13)",
+                        minWidth: 120
+                    }}>
+                        {legendLayers.map(layer => {
+                            // Try to find the color from paint
+                            let color =
+                                layer.paint?.["circle-color"] ||
+                                layer.paint?.["fill-color"] ||
+                                layer.paint?.["line-color"] ||
+                                "#ccc";
+                            // If color is an array (expression), fallback to gray or improve extraction
+                            if (Array.isArray(color)) { color = "#ccc"; }
+                            return (
+                                <div
+                                    key={layer.id}
+                                    style={{
+                                        display: "flex",
+                                        alignItems: "center",
+                                        cursor: "pointer",
+                                        fontWeight: "normal",
+                                        opacity: visibleLayers.includes(layer.id) ? 1 : 0.5,
+                                        marginBottom: 5,
+                                        userSelect: "none"
+                                    }}
+                                    onClick={() => {
+                                        setVisibleLayers(vs =>
+                                            vs.includes(layer.id)
+                                                ? vs.filter(id => id !== layer.id)
+                                                : [...vs, layer.id]
+                                        );
+                                    }}
+                                    title={layer.id}
+                                >
+                                    {/* Swatch */}
+                                    <span style={{
+                                        display: "inline-block",
+                                        width: 16,
+                                        height: 16,
+                                        borderRadius: 8,
+                                        marginRight: 10,
+                                        background: color,
+                                        border: "1px solid #999"
+                                    }} />
+                                    <span>{layer.display_name}</span>
+                                </div>
+                            );
+                        })}
+                    </div>)}
                 {/* Map container */}
                 <div
-                    id={id}
                     ref={mapContainer}
-                    style={{ width: "100%", height: "100%" }}
+                    style={{ width: "100%", height: "100%"}}
                 />
             </div>
         </div>
