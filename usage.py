@@ -11,7 +11,7 @@ base_geojson = {
         {
             "type": "Feature",
             "geometry": {"type": "Point", "coordinates": [13.404954, 52.520008]},
-            "properties": {"name": "City", "risk": 123, "prob": 0.4, "volume": 1231, "zweck_coarse": 4, "stoerfall_str": "Ja"}
+            "properties": {"name": "City", "risk": 123, "prob": 0.424124321, "volume": 1231, "zweck_coarse": 4, "stoerfall_str": "Ja"}
         }
     ]
 }
@@ -45,6 +45,7 @@ app.layout = html.Div([
         id="my-map",
         center=[13.404954, 52.520008],
         max_bounds=[[2.0, 48.0], [15.0, 55.0]],
+        basemap="https://demotiles.maplibre.org/style.json",
         zoom=5,
         sources={
             "my-points": {
@@ -68,8 +69,8 @@ app.layout = html.Div([
         hover_html=(
             "<strong>{name}</strong><br/>"
             "Risiko: {risk}<br/>"
-            "Wahrscheinlichkeit: {prob}<br/>"
-            "Volumen: {volume}<br/>"
+            "Wahrscheinlichkeit: {prob:.0f}<br/>"
+            "Volumen: {volume:.0e}<br/>"
             "Zweck: {zweck_coarse}<br/>"
             "Störfall: {stoerfall_str}"
         ),

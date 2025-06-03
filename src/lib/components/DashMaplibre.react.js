@@ -15,11 +15,30 @@ const areLayersEqual = (layerA, layerB) => {
     return JSON.stringify(layerA) === JSON.stringify(layerB);
 };
 
+
 function interpolateTemplate(template, props) {
-    return template.replace(/\{(\w+)\}/g, (match, key) =>
-        key in props ? props[key] : ''
-    );
-};
+    // Match {key} or {key:.2f} or {key:.2e}
+    return template.replace(/\{(\w+)(?::([.\d\w]+))?\}/g, (match, key, format) => {
+        const value = props[key];
+        if (value === null) {return '';}
+        if (format && typeof value === 'number') {
+            // .2f (fixed-point)
+            const fixedMatch = format.match(/^\.([0-9]+)f$/);
+            if (fixedMatch) {
+                const decimals = parseInt(fixedMatch[1], 10);
+                return value.toFixed(decimals);
+            }
+            // .2e (exponential)
+            const expMatch = format.match(/^\.([0-9]+)e$/);
+            if (expMatch) {
+                const decimals = parseInt(expMatch[1], 10);
+                return value.toExponential(decimals);
+            }
+        }
+        return String(value);
+    });
+}
+
 
 /**
  * DashMaplibre Component
