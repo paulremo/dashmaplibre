@@ -58,8 +58,6 @@ const DashMaplibre = ({
     style = {},
     colorbar_map = {},
     colorbar_risk = {},
-    hover_layer = "",
-    hover_html = "",
     setProps,
     ...otherProps
 }) => {
@@ -82,17 +80,9 @@ const DashMaplibre = ({
                 ...otherProps
             });
 
-            mapRef.current.on('load', () => {
-                // Add sources and layers
-                Object.entries(sources).forEach(([id, src]) => {
-                    mapRef.current.addSource(id, src);
-                });
-                layers.forEach(layer => {
-                    mapRef.current.addLayer(layer);
-                });
-            });
+            // Expose map instance for debugging
+            window._map = mapRef.current;
 
-            // Example: Send click events back to Dash
             mapRef.current.on('click', (e) => {
                 if (setProps) {
                     setProps({ clickData: e.lngLat });
@@ -140,114 +130,178 @@ const DashMaplibre = ({
     // Update sources
     useEffect(() => {
         if (!mapRef.current) {return;}
+        const map = mapRef.current;
         Object.entries(sources).forEach(([id, src]) => {
-            if (mapRef.current.getSource(id)) {
-                if (src.type === "geojson") {
-                    mapRef.current.getSource(id).setData(src.data);
+            if (!map.getSource(id)) {
+                try {
+                    map.addSource(id, src);
+                } catch (err) {
+                    // Optionally log error
                 }
+            } else if (src.type === "geojson") {
+                map.getSource(id).setData(src.data);
             }
         });
     }, [sources]);
 
     // Update layers
     useEffect(() => {
-        if (!mapRef.current) {return;}
+        if (!mapRef.current) {
+            return () => {};
+        }
         const map = mapRef.current;
+        let retryTimeout = null;
 
-        // Get previous and current layer IDs
-        const prevLayers = prevLayersRef.current;
-        const currLayerIds = new Set(layers.map(l => l.id));
+        function updateSourcesAndLayers() {
+            // 1. Add sources
+            console.debug("Updating sources and layers");
+            Object.entries(sources).forEach(([id, src]) => {
+                if (!map.getSource(id)) {
+                    try { map.addSource(id, src); } catch (err) {}
+                } else if (src.type === "geojson") {
+                    map.getSource(id).setData(src.data);
+                }
+            });
 
-        // 1. Remove layers no longer present
-        prevLayers.forEach(layer => {
-            if (!currLayerIds.has(layer.id) && map.getLayer(layer.id)) {
-                map.removeLayer(layer.id);
-            }
-        });
+            // 2. Remove layers no longer present
+            console.debug("Removing old layers");
+            const prevLayers = prevLayersRef.current;
+            const currLayerIds = new Set(layers.map(l => l.id));
+            prevLayers.forEach(layer => {
+                if (!currLayerIds.has(layer.id) && map.getLayer(layer.id)) {
+                    map.removeLayer(layer.id);
+                }
+            });
 
-        // 2. Add new layers and update changed layers
-        layers.forEach((layer, idx) => {
-            const onMap = map.getLayer(layer.id);
-            const prevLayer = prevLayers.find(l => l.id === layer.id);
+            // 3. Add new layers and update changed layers
+            let skipped = false;
+            layers.forEach((layer, idx) => {
+                console.debug(`Processing layer ${layer.id} (${idx + 1}/${layers.length})`);
+                const onMap = map.getLayer(layer.id);
+                const prevLayer = prevLayers.find(l => l.id === layer.id);
 
-            if (!onMap) {
-                // Add at the correct index for ordering
-                // Find the layer after this one (if any) to insert before it
-                let beforeId = null;
-                for (let i = idx + 1; i < layers.length; i++) {
-                    if (map.getLayer(layers[i].id)) {
-                        beforeId = layers[i].id;
-                        break;
+                // Only add if source exists
+                if (!map.getSource(layer.source)) {
+                    console.debug(`Skipping layer ${layer.id} - source ${layer.source} not found`);
+                    skipped = true;
+                    return;
+                }
+
+                if (!onMap) {
+                    console.debug(`Adding layer ${layer.id}`);
+                    let beforeId = null;
+                    for (let i = idx + 1; i < layers.length; i++) {
+                        if (map.getLayer(layers[i].id)) {
+                            beforeId = layers[i].id;
+                            break;
+                        }
+                    }
+                    try {
+                        map.addLayer(layer, beforeId);
+                    } catch (err) {
+                        console.error(`Failed to add layer ${layer.id}:`, err, layer);
+                    }
+                } else if (!areLayersEqual(layer, prevLayer)) {
+                    console.debug(`Updating layer ${layer.id}`);
+                    map.removeLayer(layer.id);
+                    let beforeId = null;
+                    for (let i = idx + 1; i < layers.length; i++) {
+                        if (map.getLayer(layers[i].id)) {
+                            beforeId = layers[i].id;
+                            break;
+                        }
+                    }
+                    try {
+                        map.addLayer(layer, beforeId);
+                    } catch (err) {
+                        console.error(`Failed to update layer ${layer.id}:`, err, layer);
                     }
                 }
-                try {
-                    map.addLayer(layer, beforeId);
-                } catch (err) {
-                    // Sometimes MapLibre throws if source doesn't exist yet, can retry later
-                    // Optionally add error handling
-                }
-            } else if (!areLayersEqual(layer, prevLayer)) {
-                // If the layer definition has changed, remove and re-add
-                map.removeLayer(layer.id);
-                // See above for ordering logic
-                let beforeId = null;
-                for (let i = idx + 1; i < layers.length; i++) {
-                    if (map.getLayer(layers[i].id)) {
-                        beforeId = layers[i].id;
-                        break;
-                    }
-                }
-                try {
-                    map.addLayer(layer, beforeId);
-                } catch (err) {
-                    // Handle errors (e.g., source not yet available)
-                }
+            });
+
+            // Only update prevLayersRef when all layers processed
+            if (skipped) {
+                retryTimeout = setTimeout(updateSourcesAndLayers, 50);
+            } else {
+                prevLayersRef.current = layers;
             }
-            // else: nothing to do, layer is up-to-date
-        });
+        }
 
-        // Save current layers as previous for next effect run
-        prevLayersRef.current = layers;
+ 
+        console.debug("Updating sources and layers (immediate call)");
+        updateSourcesAndLayers();
+        if (!map.isStyleLoaded()) {
+            console.debug("Map style not loaded, also waiting for load event");
+            map.once('load', updateSourcesAndLayers);
+        }
 
-    }, [layers]);
+        return () => {
+            if (retryTimeout) {clearTimeout(retryTimeout);}
+        };
+    }, [layers, sources]);
 
-    // hover popup
+    // Hover popups for all layers with hover_html
     useEffect(() => {
         if (!mapRef.current) {
             return () => {};
         }
         const map = mapRef.current;
-        const popup = new maplibregl.Popup({ closeButton: false, closeOnClick: false });
-        const hoverLayerId = hover_layer;
+        const popups = {};
+        const handlers = {};
 
-        function onMouseEnter(e) {
-            map.getCanvas().style.cursor = 'pointer';
-            const feature = e.features[0];
-            const props = feature.properties;
-            const html = interpolateTemplate(hover_html, props);
-            popup.setLngLat(feature.geometry.coordinates).setHTML(html).addTo(map);
-        }
-        function onMouseLeave() {
-            map.getCanvas().style.cursor = '';
-            popup.remove();
-        }
-        function attachListeners() {
-            if (!map.getLayer(hoverLayerId)) {return;}
-            map.on('mouseenter', hoverLayerId, onMouseEnter);
-            map.on('mouseleave', hoverLayerId, onMouseLeave);
-        }
-        if (map.isStyleLoaded()) {attachListeners();}
-        else {map.on('load', attachListeners);}
+        // Attach listeners for each layer with hover_html
+        layers.forEach(layer => {
+            if (!layer.hover_html) { return; }
+            const layerId = layer.id;
+            const hoverHtml = layer.hover_html;
 
-        // Clean up
-        return () => {
-            if (map.getLayer(hoverLayerId)) {
-                map.off('mouseenter', hoverLayerId, onMouseEnter);
-                map.off('mouseleave', hoverLayerId, onMouseLeave);
+            function onMouseEnter(e) {
+                map.getCanvas().style.cursor = 'pointer';
+                const feature = e.features[0];
+                const props = feature.properties;
+                const html = interpolateTemplate(hoverHtml, props);
+                if (!popups[layerId]) {
+                    popups[layerId] = new maplibregl.Popup({ closeButton: false, closeOnClick: false });
+                }
+                popups[layerId]
+                    .setLngLat(feature.geometry.coordinates)
+                    .setHTML(html)
+                    .addTo(map);
             }
-            popup.remove();
+
+            function onMouseLeave() {
+                map.getCanvas().style.cursor = '';
+                if (popups[layerId]) {
+                    popups[layerId].remove();
+                }
+            }
+
+            handlers[layerId] = { onMouseEnter, onMouseLeave };
+
+            // Attach only if the layer exists
+            if (map.getLayer(layerId)) {
+                map.on('mouseenter', layerId, onMouseEnter);
+                map.on('mouseleave', layerId, onMouseLeave);
+            }
+        });
+
+        // Clean up: remove listeners and popups for removed layers
+        return () => {
+            layers.forEach(layer => {
+                if (!layer.hover_html) { return; }
+                const layerId = layer.id;
+                const h = handlers[layerId];
+                if (h && map.getLayer(layerId)) {
+                    map.off('mouseenter', layerId, h.onMouseEnter);
+                    map.off('mouseleave', layerId, h.onMouseLeave);
+                }
+                if (popups[layerId]) {
+                    popups[layerId].remove();
+                    delete popups[layerId];
+                }
+            });
         };
-    }, [sources, layers, hover_html, hover_layer]);
+    }, [layers, sources]);
 
     return (
         <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", ...style }}>

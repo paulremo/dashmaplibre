@@ -44,11 +44,11 @@ Keyword arguments:
 - colorbar_risk (dict; optional):
     Colorbar configuration for the risk colorbar.
 
-- hover_html (string; default ""):
+- hover_html (string; optional):
     The HTML template for hover popups.  Use {property_name} to
     interpolate properties from the hovered feature.
 
-- hover_layer (string; default ""):
+- hover_layer (string; optional):
     The layer ID to attach hover events to.
 
 - layers (list; optional):
