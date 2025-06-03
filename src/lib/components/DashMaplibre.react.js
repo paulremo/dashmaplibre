@@ -164,6 +164,17 @@ const DashMaplibre = ({
         });
     }, [sources]);
 
+    // Update basemap style if the basemap prop changes
+    useEffect(() => {
+        if (!mapRef.current) {return;}
+        // Only update if the style actually changes
+        const map = mapRef.current;
+        // Accept both URL and object for basemap
+        if (typeof basemap === "string" || typeof basemap === "object") {
+            map.setStyle(basemap);
+        }
+    }, [basemap]);
+
     // Update layers
     useEffect(() => {
         if (!mapRef.current) {
@@ -322,17 +333,6 @@ const DashMaplibre = ({
             });
         };
     }, [layers, sources]);
-
-    // Update basemap style if the basemap prop changes
-    useEffect(() => {
-        if (!mapRef.current) {return;}
-        // Only update if the style actually changes
-        const map = mapRef.current;
-        // Accept both URL and object for basemap
-        if (typeof basemap === "string" || typeof basemap === "object") {
-            map.setStyle(basemap);
-        }
-    }, [basemap]);
 
     // Update camera when center, zoom, bearing, or pitch change
     useEffect(() => {
