@@ -65,6 +65,7 @@ const DashMaplibre = ({
     const mapRef = useRef(null);
     const prevLayersRef = useRef([]);
     const [visibleLayers, setVisibleLayers] = useState(() => layers.filter(l => l.display_name).map(l => l.id));
+    const savedViewRef = useRef({ center, zoom });
 
     // Initialize map
     useEffect(() => {
@@ -95,6 +96,25 @@ const DashMaplibre = ({
                 mapRef.current.remove();
                 mapRef.current = null;
             }
+        };
+    }, []);
+
+    useEffect(() => {
+        if (!mapRef.current) {
+            return () => {};
+        }
+        const map = mapRef.current;
+
+        function handleDblClick(e) {
+            if (savedViewRef.current) {
+                map.setCenter(savedViewRef.current.center);
+                map.setZoom(savedViewRef.current.zoom);
+            }
+        }
+
+        map.on('dblclick', handleDblClick);
+        return () => {
+            map.off('dblclick', handleDblClick);
         };
     }, []);
 
@@ -302,6 +322,45 @@ const DashMaplibre = ({
             });
         };
     }, [layers, sources]);
+
+    // Update basemap style if the basemap prop changes
+    useEffect(() => {
+        if (!mapRef.current) {return;}
+        // Only update if the style actually changes
+        const map = mapRef.current;
+        // Accept both URL and object for basemap
+        if (typeof basemap === "string" || typeof basemap === "object") {
+            map.setStyle(basemap);
+        }
+    }, [basemap]);
+
+    // Update camera when center, zoom, bearing, or pitch change
+    useEffect(() => {
+        if (!mapRef.current) {return;}
+        const map = mapRef.current;
+
+        // Save latest prop-driven view
+        if (center && typeof zoom === "number") {
+            savedViewRef.current = { center, zoom };
+        }
+
+        // Only update if the value actually changed
+        if (center) {
+            const curr = map.getCenter();
+            if (curr.lng !== center[0] || curr.lat !== center[1]) {
+                map.setCenter(center);
+            }
+        }
+        if (typeof zoom === "number" && map.getZoom() !== zoom) {
+            map.setZoom(zoom);
+        }
+        if (typeof bearing === "number" && map.getBearing() !== bearing) {
+            map.setBearing(bearing);
+        }
+        if (typeof pitch === "number" && map.getPitch() !== pitch) {
+            map.setPitch(pitch);
+        }
+    }, [center, zoom, bearing, pitch]);
 
     return (
         <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", ...style }}>

@@ -1,5 +1,5 @@
 import dash
-from dash import html, dcc, Output, Input, Patch, ctx, State
+from dash import html, dcc, Output, Input, State, Patch, ctx
 from dash_maplibre import DashMaplibre
 
 app = dash.Dash(__name__)
@@ -42,10 +42,10 @@ app.layout = html.Div([
     ),
     html.Button("Change Circle Color", id="color-btn", n_clicks=0, style={"margin-bottom": "1em"}),
     html.Button("Add Second Point Layer", id="add-layer-btn", n_clicks=0, style={"margin-bottom": "1em", "margin-left": "1em"}),
+    html.Button("Set Center & Zoom", id="center-zoom-btn", n_clicks=0, style={"margin-bottom": "1em", "margin-left": "1em"}),
     DashMaplibre(
         id="my-map",
         center=[13.404954, 52.520008],
-        # max_bounds=[[2.0, 48.0], [15.0, 55.0]],
         basemap="https://demotiles.maplibre.org/style.json",
         zoom=5,
         sources={
@@ -80,7 +80,7 @@ app.layout = html.Div([
     )
 ])
 
-# Update coordinates (PATCH for sources)
+# Update coordinates, color, and add layer
 @app.callback(
     Output("my-map", "sources"),
     Output("my-map", "layers"),
@@ -95,17 +95,16 @@ def update_map(n_color, n_add_layer, selected_point, current_sources, current_la
     triggered = ctx.triggered_id
     sources_patch = Patch()
     layers_patch = Patch()
-    # Always handle radio button (move point)
+    # Move point
     if triggered == "point-radio":
         sources_patch["my-points"]["data"]["features"][0]["geometry"]["coordinates"] = coords[selected_point]
         sources_patch["my-points"]["data"]["features"][0]["properties"]["name"] = names[selected_point]
-    # Always handle color button
+    # Change color
     if triggered == "color-btn":
         color = colors[(n_color or 0) % len(colors)]
         layers_patch[0]["paint"]["circle-color"] = color
-    # Always handle add layer button
+    # Add second point layer
     if triggered == "add-layer-btn":
-        # Add source if missing
         if "my-points-2" not in (current_sources or {}):
             sources_patch["my-points-2"] = {
                 "type": "geojson",
@@ -120,7 +119,6 @@ def update_map(n_color, n_add_layer, selected_point, current_sources, current_la
                     ]
                 }
             }
-        # Add layer if missing
         ids = [l.get("id") for l in (current_layers or [])]
         if "points-2" not in ids:
             layers_patch[len(current_layers or [])] = {
@@ -142,6 +140,17 @@ def update_map(n_color, n_add_layer, selected_point, current_sources, current_la
                 ),
             }
     return sources_patch, layers_patch
+
+# Set center and zoom via button
+@app.callback(
+    Output("my-map", "center"),
+    Output("my-map", "zoom"),
+    Input("center-zoom-btn", "n_clicks"),
+    prevent_initial_call=True
+)
+def set_center_zoom(n_clicks):
+    # Example: set to Paris at zoom 8
+    return [2.352222, 48.856613], 8
 
 if __name__ == '__main__':
     app.run(debug=True)
