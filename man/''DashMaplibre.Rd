@@ -6,42 +6,43 @@
 \title{DashMaplibre component}
 
 \description{
-
+DashMaplibre Component  A component exposing the MapLibre GL JS library for use in Dash applications.
 }
 
 \usage{
-''DashMaplibre(id=NULL, bearing=NULL, center=NULL, colorbar_map=NULL,
-colorbar_risk=NULL, hover_html=NULL, hover_layer=NULL,
-layers=NULL, pitch=NULL, sources=NULL, style=NULL,
-styleUrl=NULL, zoom=NULL)
+''DashMaplibre(id=NULL, basemap=NULL, bearing=NULL, center=NULL,
+colorbar_map=NULL, colorbar_risk=NULL, hover_html=NULL,
+hover_layer=NULL, layers=NULL, pitch=NULL, sources=NULL,
+style=NULL, zoom=NULL)
 }
 
 \arguments{
-\item{id}{Character. }
+\item{id}{Character. The ID of the component, used to identify it in Dash callbacks.}
 
-\item{bearing}{Numeric. }
+\item{basemap}{Character | named list. The basemap URL or json.}
 
-\item{center}{Unnamed list. }
+\item{bearing}{Numeric. The bearing of the camera.}
 
-\item{colorbar_map}{Named list. }
+\item{center}{Unnamed list. The center of the camera.}
 
-\item{colorbar_risk}{Named list. }
+\item{colorbar_map}{Named list. Colorbar configuration for the map colorbar.}
 
-\item{hover_html}{Character. }
+\item{colorbar_risk}{Named list. Colorbar configuration for the risk colorbar.}
 
-\item{hover_layer}{Character. }
+\item{hover_html}{Character. The HTML template for hover popups.
+Use {property_name} to interpolate properties from the hovered feature.}
 
-\item{layers}{Unnamed list. }
+\item{hover_layer}{Character. The layer ID to attach hover events to.}
 
-\item{pitch}{Numeric. }
+\item{layers}{Unnamed list. The maplibre layers list.}
 
-\item{sources}{Named list. }
+\item{pitch}{Numeric. The pitch of the camera.}
 
-\item{style}{Named list. }
+\item{sources}{Named list. The maplibre sources dictionary.}
 
-\item{styleUrl}{Character. }
+\item{style}{Named list. Additional style properties for the map container.}
 
-\item{zoom}{Numeric. }
+\item{zoom}{Numeric. The zoom level of the camera.}
 }
 
 \value{named list of JSON elements corresponding to React.js properties and their values}

@@ -20,33 +20,48 @@ NumberType = typing.Union[
 
 class DashMaplibre(Component):
     """A DashMaplibre component.
+DashMaplibre Component
 
+A component exposing the MapLibre GL JS library for use in Dash applications.
 
 Keyword arguments:
 
-- id (string; optional)
+- id (string; optional):
+    The ID of the component, used to identify it in Dash callbacks.
 
-- bearing (number; default 0)
+- basemap (string | dict; default {  version: 8,  sources: {},  layers: []}):
+    The basemap URL or json.
 
-- center (list; default [0, 0])
+- bearing (number; default 0):
+    The bearing of the camera.
 
-- colorbar_map (dict; optional)
+- center (list; default [0, 0]):
+    The center of the camera.
 
-- colorbar_risk (dict; optional)
+- colorbar_map (dict; optional):
+    Colorbar configuration for the map colorbar.
 
-- hover_html (string; default "")
+- colorbar_risk (dict; optional):
+    Colorbar configuration for the risk colorbar.
 
-- hover_layer (string; default "")
+- hover_html (string; default ""):
+    The HTML template for hover popups.  Use {property_name} to
+    interpolate properties from the hovered feature.
 
-- layers (list; optional)
+- hover_layer (string; default ""):
+    The layer ID to attach hover events to.
 
-- pitch (number; default 0)
+- layers (list; optional):
+    The maplibre layers list.
 
-- sources (dict; optional)
+- pitch (number; default 0):
+    The pitch of the camera.
 
-- styleUrl (string; default "https://demotiles.maplibre.org/style.json")
+- sources (dict; optional):
+    The maplibre sources dictionary.
 
-- zoom (number; default 2)"""
+- zoom (number; default 2):
+    The zoom level of the camera."""
     _children_props = []
     _base_nodes = ['children']
     _namespace = 'dash_maplibre'
@@ -56,7 +71,7 @@ Keyword arguments:
     def __init__(
         self,
         id: typing.Optional[typing.Union[str, dict]] = None,
-        styleUrl: typing.Optional[str] = None,
+        basemap: typing.Optional[typing.Union[str, dict]] = None,
         center: typing.Optional[typing.Sequence] = None,
         zoom: typing.Optional[NumberType] = None,
         bearing: typing.Optional[NumberType] = None,
@@ -70,9 +85,9 @@ Keyword arguments:
         hover_html: typing.Optional[str] = None,
         **kwargs
     ):
-        self._prop_names = ['id', 'bearing', 'center', 'colorbar_map', 'colorbar_risk', 'hover_html', 'hover_layer', 'layers', 'pitch', 'sources', 'style', 'styleUrl', 'zoom']
+        self._prop_names = ['id', 'basemap', 'bearing', 'center', 'colorbar_map', 'colorbar_risk', 'hover_html', 'hover_layer', 'layers', 'pitch', 'sources', 'style', 'zoom']
         self._valid_wildcard_attributes =            []
-        self.available_properties = ['id', 'bearing', 'center', 'colorbar_map', 'colorbar_risk', 'hover_html', 'hover_layer', 'layers', 'pitch', 'sources', 'style', 'styleUrl', 'zoom']
+        self.available_properties = ['id', 'basemap', 'bearing', 'center', 'colorbar_map', 'colorbar_risk', 'hover_html', 'hover_layer', 'layers', 'pitch', 'sources', 'style', 'zoom']
         self.available_wildcard_properties =            []
         _explicit_args = kwargs.pop('_explicit_args')
         _locals = locals()

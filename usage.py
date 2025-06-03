@@ -43,7 +43,6 @@ app.layout = html.Div([
     html.Button("Change Circle Color", id="color-btn", n_clicks=0, style={"margin-bottom": "1em"}),
     DashMaplibre(
         id="my-map",
-        styleUrl="https://demotiles.maplibre.org/style.json",
         center=[13.404954, 52.520008],
         zoom=5,
         sources={
@@ -55,6 +54,7 @@ app.layout = html.Div([
         layers=[
             {
                 "id": "points",
+                "display_name": "Point layer",
                 "type": "circle",
                 "source": "my-points",
                 "paint": {

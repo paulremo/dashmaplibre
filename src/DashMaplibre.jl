@@ -5,6 +5,7 @@ using Dash
 const resources_path = realpath(joinpath( @__DIR__, "..", "deps"))
 const version = "0.0.1"
 
+include("jl/''_colorbar.jl")
 include("jl/''_dashmaplibre.jl")
 
 function __init__()
