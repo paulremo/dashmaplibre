@@ -31,6 +31,7 @@ const DashMaplibre = ({
     basemap = EMPTY_STYLE,
     center = [0, 0],
     zoom = 2,
+    max_bounds = null,
     bearing = 0,
     pitch = 0,
     sources = {},
@@ -46,7 +47,6 @@ const DashMaplibre = ({
     const mapContainer = useRef(null);
     const mapRef = useRef(null);
     const prevLayersRef = useRef([]);
-
     const [visibleLayers, setVisibleLayers] = useState(() => layers.filter(l => l.display_name).map(l => l.id));
 
     // Initialize map
@@ -59,6 +59,7 @@ const DashMaplibre = ({
                 zoom,
                 bearing,
                 pitch,
+                maxBounds: max_bounds,
                 ...otherProps
             });
 
@@ -324,6 +325,10 @@ DashMaplibre.propTypes = {
      * The zoom level of the camera.
      */
     zoom: PropTypes.number,
+    /**
+     * The maximum bounds of the camera.
+     */
+    max_bounds: PropTypes.array,
     /**
      * The bearing of the camera.
      */

@@ -54,6 +54,9 @@ Keyword arguments:
 - layers (list; optional):
     The maplibre layers list.
 
+- max_bounds (list; optional):
+    The maximum bounds of the camera.
+
 - pitch (number; default 0):
     The pitch of the camera.
 
@@ -74,6 +77,7 @@ Keyword arguments:
         basemap: typing.Optional[typing.Union[str, dict]] = None,
         center: typing.Optional[typing.Sequence] = None,
         zoom: typing.Optional[NumberType] = None,
+        max_bounds: typing.Optional[typing.Sequence] = None,
         bearing: typing.Optional[NumberType] = None,
         pitch: typing.Optional[NumberType] = None,
         sources: typing.Optional[dict] = None,
@@ -85,9 +89,9 @@ Keyword arguments:
         hover_html: typing.Optional[str] = None,
         **kwargs
     ):
-        self._prop_names = ['id', 'basemap', 'bearing', 'center', 'colorbar_map', 'colorbar_risk', 'hover_html', 'hover_layer', 'layers', 'pitch', 'sources', 'style', 'zoom']
+        self._prop_names = ['id', 'basemap', 'bearing', 'center', 'colorbar_map', 'colorbar_risk', 'hover_html', 'hover_layer', 'layers', 'max_bounds', 'pitch', 'sources', 'style', 'zoom']
         self._valid_wildcard_attributes =            []
-        self.available_properties = ['id', 'basemap', 'bearing', 'center', 'colorbar_map', 'colorbar_risk', 'hover_html', 'hover_layer', 'layers', 'pitch', 'sources', 'style', 'zoom']
+        self.available_properties = ['id', 'basemap', 'bearing', 'center', 'colorbar_map', 'colorbar_risk', 'hover_html', 'hover_layer', 'layers', 'max_bounds', 'pitch', 'sources', 'style', 'zoom']
         self.available_wildcard_properties =            []
         _explicit_args = kwargs.pop('_explicit_args')
         _locals = locals()

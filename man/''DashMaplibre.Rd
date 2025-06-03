@@ -12,8 +12,8 @@ DashMaplibre Component  A component exposing the MapLibre GL JS library for us
 \usage{
 ''DashMaplibre(id=NULL, basemap=NULL, bearing=NULL, center=NULL,
 colorbar_map=NULL, colorbar_risk=NULL, hover_html=NULL,
-hover_layer=NULL, layers=NULL, pitch=NULL, sources=NULL,
-style=NULL, zoom=NULL)
+hover_layer=NULL, layers=NULL, max_bounds=NULL, pitch=NULL,
+sources=NULL, style=NULL, zoom=NULL)
 }
 
 \arguments{
@@ -35,6 +35,8 @@ Use {property_name} to interpolate properties from the hovered feature.}
 \item{hover_layer}{Character. The layer ID to attach hover events to.}
 
 \item{layers}{Unnamed list. The maplibre layers list.}
+
+\item{max_bounds}{Unnamed list. The maximum bounds of the camera.}
 
 \item{pitch}{Numeric. The pitch of the camera.}
 

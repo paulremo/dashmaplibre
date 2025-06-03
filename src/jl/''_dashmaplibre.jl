@@ -20,13 +20,14 @@ Keyword arguments:
 Use {property_name} to interpolate properties from the hovered feature.
 - `hover_layer` (String; optional): The layer ID to attach hover events to.
 - `layers` (Array; optional): The maplibre layers list.
+- `max_bounds` (Array; optional): The maximum bounds of the camera.
 - `pitch` (Real; optional): The pitch of the camera.
 - `sources` (Dict; optional): The maplibre sources dictionary.
 - `style` (Dict; optional): Additional style properties for the map container.
 - `zoom` (Real; optional): The zoom level of the camera.
 """
 function ''_dashmaplibre(; kwargs...)
-        available_props = Symbol[:id, :basemap, :bearing, :center, :colorbar_map, :colorbar_risk, :hover_html, :hover_layer, :layers, :pitch, :sources, :style, :zoom]
+        available_props = Symbol[:id, :basemap, :bearing, :center, :colorbar_map, :colorbar_risk, :hover_html, :hover_layer, :layers, :max_bounds, :pitch, :sources, :style, :zoom]
         wild_props = Symbol[]
         return Component("''_dashmaplibre", "DashMaplibre", "dash_maplibre", available_props, wild_props; kwargs...)
 end

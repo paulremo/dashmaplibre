@@ -44,6 +44,7 @@ app.layout = html.Div([
     DashMaplibre(
         id="my-map",
         center=[13.404954, 52.520008],
+        max_bounds=[[2.0, 48.0], [15.0, 55.0]],
         zoom=5,
         sources={
             "my-points": {
