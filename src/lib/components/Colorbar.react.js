@@ -92,8 +92,23 @@ const Colorbar = ({
             .style("stroke", "#444")
             .style("stroke-width", 1);
 
-        // Draw labels (optional)
-        Object.entries(labels).forEach(([pos, text]) => {
+        // Draw labels (auto or provided)
+        let labelEntries = Object.entries(labels || {});
+        if (labelEntries.length === 0) {
+            // Auto-generate labels from stops, but limit to available width
+            const MIN_LABEL_SPACING = 60; // px, adjust as needed
+            const maxLabels = Math.max(2, Math.floor(width / MIN_LABEL_SPACING));
+            // Evenly pick up to maxLabels from stops
+            const step = Math.max(1, Math.ceil(entries.length / maxLabels));
+            labelEntries = entries
+                .filter((_, i) => i % step === 0 || i === entries.length - 1) // always include last
+                .map(([v]) => {
+                    const p = (scale(v) / width).toFixed(4);
+                    return [p, v.toString()];
+                });
+        }
+
+        labelEntries.forEach(([pos, text]) => {
             const p = Math.max(0, Math.min(1, parseFloat(pos)));
             const xpos = p * width;
             let anchor = "middle";

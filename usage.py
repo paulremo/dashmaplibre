@@ -73,8 +73,7 @@ app.layout = html.Div([
         },
         colorbar_risk={
             "stops": {0: ["#fff", "#ccc"], 1: ["#000", "#333"]},
-            "title": "Risk",
-            "labels": {"0": "Poor", "1": "Excellent"}
+            "title": "Risk"
         },
         style={"width": "800px", "height": "500px"}
     )
