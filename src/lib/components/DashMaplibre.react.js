@@ -114,7 +114,9 @@ const DashMaplibre = ({
                 console.debug("Restoring saved view state:", savedViewRef.current);
                 map.flyTo({
                     center: savedViewRef.current.center,
-                    zoom: savedViewRef.current.zoom,});
+                    zoom: savedViewRef.current.zoom,
+                    bearing: 0,
+                    pitch: 0,});
             }
         }
 
@@ -293,6 +295,10 @@ const DashMaplibre = ({
             const hoverHtml = layer.hover_html;
 
             function onMouseEnter(e) {
+                // Check opacity before showing popup
+                const opacity = map.getPaintProperty(layerId, "circle-opacity");
+                if (opacity === 0) {return;}
+
                 map.getCanvas().style.cursor = 'pointer';
                 const feature = e.features[0];
                 const props = feature.properties;
