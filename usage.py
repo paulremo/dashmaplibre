@@ -66,15 +66,6 @@ app.layout = html.Div([
                 }
             }
         ],
-        colorbar_map={
-            "stops": {0: ["#00f", "#66f"], 50: ["#6f6", "#ef0"], 100: ["#f00", "#f88"]},
-            "title": "Map info",
-            "labels": {"0": "Low", "1": "High", "0.5": "Medium"}
-        },
-        colorbar_risk={
-            "stops": {0: ["#fff", "#ccc"], 1: ["#000", "#333"]},
-            "title": "Risk"
-        },
         style={"width": "800px", "height": "500px"}
     )
 ])

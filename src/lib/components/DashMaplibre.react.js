@@ -56,8 +56,8 @@ const DashMaplibre = ({
     sources = {},
     layers = [],
     style = {},
-    colorbar_map = {},
-    colorbar_risk = {},
+    colorbar_map = null,
+    colorbar_risk = null,
     setProps,
     ...otherProps
 }) => {
