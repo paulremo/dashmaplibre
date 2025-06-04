@@ -29,6 +29,10 @@ Keyword arguments:
 - barHeight (number; default 24):
     Height of the colorbar.
 
+- format (string; optional):
+    Optional format function for labels.  If provided, it will be used
+    to format the label text.
+
 - labelHeight (number; default 24):
     Height of the labels.
 
@@ -58,11 +62,12 @@ Keyword arguments:
         barHeight: typing.Optional[NumberType] = None,
         titleHeight: typing.Optional[NumberType] = None,
         labelHeight: typing.Optional[NumberType] = None,
+        format: typing.Optional[str] = None,
         **kwargs
     ):
-        self._prop_names = ['barHeight', 'labelHeight', 'labels', 'stops', 'title', 'titleHeight']
+        self._prop_names = ['barHeight', 'format', 'labelHeight', 'labels', 'stops', 'title', 'titleHeight']
         self._valid_wildcard_attributes =            []
-        self.available_properties = ['barHeight', 'labelHeight', 'labels', 'stops', 'title', 'titleHeight']
+        self.available_properties = ['barHeight', 'format', 'labelHeight', 'labels', 'stops', 'title', 'titleHeight']
         self.available_wildcard_properties =            []
         _explicit_args = kwargs.pop('_explicit_args')
         _locals = locals()

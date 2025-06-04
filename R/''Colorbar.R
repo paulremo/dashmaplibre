@@ -1,9 +1,9 @@
 # AUTO GENERATED FILE - DO NOT EDIT
 
 #' @export
-''Colorbar <- function(barHeight=NULL, labelHeight=NULL, labels=NULL, stops=NULL, title=NULL, titleHeight=NULL) {
+''Colorbar <- function(barHeight=NULL, format=NULL, labelHeight=NULL, labels=NULL, stops=NULL, title=NULL, titleHeight=NULL) {
     
-    props <- list(barHeight=barHeight, labelHeight=labelHeight, labels=labels, stops=stops, title=title, titleHeight=titleHeight)
+    props <- list(barHeight=barHeight, format=format, labelHeight=labelHeight, labels=labels, stops=stops, title=title, titleHeight=titleHeight)
     if (length(props) > 0) {
         props <- props[!vapply(props, is.null, logical(1))]
     }
@@ -11,7 +11,7 @@
         props = props,
         type = 'Colorbar',
         namespace = 'dash_maplibre',
-        propNames = c('barHeight', 'labelHeight', 'labels', 'stops', 'title', 'titleHeight'),
+        propNames = c('barHeight', 'format', 'labelHeight', 'labels', 'stops', 'title', 'titleHeight'),
         package = 'dashMaplibre'
         )
 

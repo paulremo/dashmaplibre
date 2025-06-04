@@ -9,7 +9,7 @@ const EMPTY_STYLE = {
   sources: {},
   layers: []
 };
-
+const RETRY_TIMEOUT_MS = 50;
 
 const areLayersEqual = (layerA, layerB) => {
     return JSON.stringify(layerA) === JSON.stringify(layerB);
@@ -109,7 +109,7 @@ const DashMaplibre = ({
         // Disable default double-click zoom
         map.doubleClickZoom.disable();
 
-        function handleDblClick(e) {
+        function handleDblClick(_e) {
             if (savedViewRef.current) {
                 console.debug("Restoring saved view state:", savedViewRef.current);
                 map.flyTo({
@@ -197,7 +197,9 @@ const DashMaplibre = ({
             console.debug("Updating sources and layers");
             Object.entries(sources).forEach(([id, src]) => {
                 if (!map.getSource(id)) {
-                    try { map.addSource(id, src); } catch (err) {}
+                    try { map.addSource(id, src); } catch (err) {
+                        // Intentionally ignore errors when adding source (may already exist)
+                    }
                 } else if (src.type === "geojson") {
                     map.getSource(id).setData(src.data);
                 }
@@ -261,7 +263,7 @@ const DashMaplibre = ({
 
             // Only update prevLayersRef when all layers processed
             if (skipped) {
-                retryTimeout = setTimeout(updateSourcesAndLayers, 50);
+                retryTimeout = setTimeout(updateSourcesAndLayers, RETRY_TIMEOUT_MS);
             } else {
                 prevLayersRef.current = layers;
             }

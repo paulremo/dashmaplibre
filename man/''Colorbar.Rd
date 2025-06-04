@@ -10,12 +10,15 @@ Colorbar Component  A component creating a colorbar with the d3 library.
 }
 
 \usage{
-''Colorbar(barHeight=NULL, labelHeight=NULL, labels=NULL, stops=NULL,
-title=NULL, titleHeight=NULL)
+''Colorbar(barHeight=NULL, format=NULL, labelHeight=NULL, labels=NULL,
+stops=NULL, title=NULL, titleHeight=NULL)
 }
 
 \arguments{
 \item{barHeight}{Numeric. Height of the colorbar.}
+
+\item{format}{Character. Optional format function for labels.
+If provided, it will be used to format the label text.}
 
 \item{labelHeight}{Numeric. Height of the labels.}
 

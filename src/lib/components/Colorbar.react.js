@@ -10,6 +10,7 @@ const RANDOM_STRING_BASE = 36;
 const RANDOM_STRING_LENGTH = 9;
 const LABEL_FONT_SIZE = 12;
 const TITLE_FONT_SIZE = 14;
+const LABEL_POSITION_DECIMALS = 4;
 
 /**
  * Colorbar Component
@@ -22,7 +23,8 @@ const Colorbar = ({
     labels = {},
     barHeight = DEFAULT_BAR_HEIGHT,
     titleHeight = DEFAULT_TITLE_HEIGHT,
-    labelHeight = DEFAULT_LABEL_HEIGHT
+    labelHeight = DEFAULT_LABEL_HEIGHT,
+    format = null
 }) => {
     const containerRef = useRef(null);
     const [width, setWidth] = useState(0);
@@ -95,16 +97,28 @@ const Colorbar = ({
         // Draw labels (auto or provided)
         let labelEntries = Object.entries(labels || {});
         if (labelEntries.length === 0) {
-            // Auto-generate labels from stops, but limit to available width
-            const MIN_LABEL_SPACING = 60; // px, adjust as needed
+            const MIN_LABEL_SPACING = 60;
             const maxLabels = Math.max(2, Math.floor(width / MIN_LABEL_SPACING));
-            // Evenly pick up to maxLabels from stops
             const step = Math.max(1, Math.ceil(entries.length / maxLabels));
             labelEntries = entries
-                .filter((_, i) => i % step === 0 || i === entries.length - 1) // always include last
+                .filter((_, i) => i % step === 0 || i === entries.length - 1)
                 .map(([v]) => {
-                    const p = (scale(v) / width).toFixed(4);
-                    return [p, v.toString()];
+                    const p = (scale(v) / width).toFixed(LABEL_POSITION_DECIMALS);
+                    // Format value if format is provided
+                    let labelText = v.toString();
+                    if (format) {
+                        try {
+                            // Use d3-format if available, else fallback to JS
+                            if (typeof d3 !== "undefined" && d3.format) {
+                                labelText = d3.format(format)(v);
+                            } else {
+                                labelText = v.toLocaleString("en", { notation: format === ".2e" ? "scientific" : "standard" });
+                            }
+                        } catch (e) {
+                            labelText = v.toString();
+                        }
+                    }
+                    return [p, labelText];
                 });
         }
 
@@ -174,6 +188,11 @@ Colorbar.propTypes = {
      * Height of the labels.
      */
     labelHeight: PropTypes.number,
+    /**
+     * Optional format function for labels.
+     * If provided, it will be used to format the label text.
+     */
+    format: PropTypes.string
 };
 
 export default Colorbar;
