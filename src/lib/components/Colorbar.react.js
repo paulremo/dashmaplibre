@@ -11,6 +11,7 @@ const RANDOM_STRING_LENGTH = 9;
 const LABEL_FONT_SIZE = 12;
 const TITLE_FONT_SIZE = 14;
 const LABEL_POSITION_DECIMALS = 4;
+const MIN_LABEL_SPACING = 200;
 
 /**
  * Colorbar Component
@@ -97,7 +98,6 @@ const Colorbar = ({
         // Draw labels (auto or provided)
         let labelEntries = Object.entries(labels || {});
         if (labelEntries.length === 0) {
-            const MIN_LABEL_SPACING = 60;
             const maxLabels = Math.max(2, Math.floor(width / MIN_LABEL_SPACING));
             const step = Math.max(1, Math.ceil(entries.length / maxLabels));
             labelEntries = entries

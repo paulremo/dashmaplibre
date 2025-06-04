@@ -300,7 +300,7 @@ const DashMaplibre = ({
             function onMouseEnter(e) {
                 // Check opacity before showing popup
                 const opacity = map.getPaintProperty(layerId, "circle-opacity");
-                if (opacity === 0) {return;}
+                if (!opacity || opacity === 0) { return; }
 
                 map.getCanvas().style.cursor = 'pointer';
                 const feature = e.features[0];
