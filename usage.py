@@ -128,7 +128,8 @@ def update_map(n_color, n_add_layer, selected_point, current_sources, current_la
                 "source": "my-points-2",
                 "paint": {
                     "circle-radius": 10,
-                    "circle-color": "#e63946"
+                    "circle-color": "#e63946",
+                    "circle-opacity": ["interpolate", ["linear"], ["zoom"], 4, 0, 15, 0.6],
                 },
                 "hover_html": (
                     "<strong>{name}</strong><br/>"

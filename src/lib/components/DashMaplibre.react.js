@@ -298,12 +298,13 @@ const DashMaplibre = ({
             const hoverHtml = layer.hover_html;
 
             function onMouseEnter(e) {
+                const feature = e.features[0];
                 // Check opacity before showing popup
-                const opacity = map.getPaintProperty(layerId, "circle-opacity");
-                if (!opacity || opacity === 0) { return; }
+                const opacity = feature.layer.paint && feature.layer.paint["circle-opacity"];
+                console.debug(`Mouse enter on layer ${layerId}, opacity: ${opacity}`);
+                if (opacity === 0) { return; }
 
                 map.getCanvas().style.cursor = 'pointer';
-                const feature = e.features[0];
                 const props = feature.properties;
                 const html = interpolateTemplate(hoverHtml, props);
                 if (!popups[layerId]) {
