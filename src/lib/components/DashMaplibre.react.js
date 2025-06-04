@@ -106,10 +106,15 @@ const DashMaplibre = ({
         }
         const map = mapRef.current;
 
+        // Disable default double-click zoom
+        map.doubleClickZoom.disable();
+
         function handleDblClick(e) {
             if (savedViewRef.current) {
-                map.setCenter(savedViewRef.current.center);
-                map.setZoom(savedViewRef.current.zoom);
+                console.debug("Restoring saved view state:", savedViewRef.current);
+                map.flyTo({
+                    center: savedViewRef.current.center,
+                    zoom: savedViewRef.current.zoom,});
             }
         }
 
@@ -342,6 +347,7 @@ const DashMaplibre = ({
 
         // Save latest prop-driven view
         if (center && typeof zoom === "number") {
+            console.debug("Saving view state:", { center, zoom });
             savedViewRef.current = { center, zoom };
         }
 
