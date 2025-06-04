@@ -143,15 +143,16 @@ const DashMaplibre = ({
 
     // When layers prop changes, sync visibleLayers state (preserving toggled-off)
     useEffect(() => {
+        const validIds = layers.filter(l => l.display_name).map(l => l.id);
         setVisibleLayers(vs => {
-            const validIds = layers.filter(l => l.display_name).map(l => l.id);
-            // By default, show new layers, and preserve hidden state for previous layers
-            const newVisible = [...vs];
-            validIds.forEach(id => {
-                if (!newVisible.includes(id)) {newVisible.push(id);}
-            });
-            // Remove IDs that are no longer present
-            return newVisible.filter(id => validIds.includes(id));
+            // Only update if the visible layers actually need to change
+            if (
+                vs.length === validIds.length &&
+                vs.every((id, i) => id === validIds[i])
+            ) {
+                return vs;
+            }
+            return validIds;
         });
     }, [layers]);
 

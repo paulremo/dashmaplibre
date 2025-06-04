@@ -38,11 +38,11 @@ app.layout = html.Div([
         ],
         value="point1",
         inline=True,
-        style={"margin-bottom": "1em"}
+        style={"marginBottom": "1em"}
     ),
-    html.Button("Change Circle Color", id="color-btn", n_clicks=0, style={"margin-bottom": "1em"}),
-    html.Button("Add Second Point Layer", id="add-layer-btn", n_clicks=0, style={"margin-bottom": "1em", "margin-left": "1em"}),
-    html.Button("Set Center & Zoom", id="center-zoom-btn", n_clicks=0, style={"margin-bottom": "1em", "margin-left": "1em"}),
+    html.Button("Change Circle Color", id="color-btn", n_clicks=0, style={"marginBottom": "1em"}),
+    html.Button("Add Second Point Layer", id="add-layer-btn", n_clicks=0, style={"marginBottom": "1em", "marginLeft": "1em"}),
+    html.Button("Set Center & Zoom", id="center-zoom-btn", n_clicks=0, style={"marginBottom": "1em", "marginLeft": "1em"}),
     DashMaplibre(
         id="my-map",
         center=[13.404954, 52.520008],
