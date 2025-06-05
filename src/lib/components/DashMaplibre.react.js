@@ -175,13 +175,25 @@ const DashMaplibre = ({
 
     // Update basemap style if the basemap prop changes
     useEffect(() => {
-        if (!mapRef.current) {return;}
-        // Only update if the style actually changes
+        if (!mapRef.current) {
+            return () => {};
+        }
         const map = mapRef.current;
-        // Accept both URL and object for basemap
-        if (typeof basemap === "string" || typeof basemap === "object") {
+
+        function updateStyle() {
             map.setStyle(basemap);
         }
+
+        if (map.isStyleLoaded()) {
+            updateStyle();
+        } else {
+            // Wait for the style to load, then set the new style
+            map.once('styledata', updateStyle);
+        }
+        // Cleanup: remove listener if effect re-runs before style loads
+        return () => {
+            map.off('styledata', updateStyle);
+        };
     }, [basemap]);
 
     // Update layers
@@ -408,7 +420,8 @@ const DashMaplibre = ({
                                 width: 12,
                                 height: 12,
                                 borderRadius: 6,
-                                marginRight: 10,
+                                marginRight: 13,
+                                marginLeft: 3,
                                 background: color
                             }} />
                         );
@@ -416,7 +429,7 @@ const DashMaplibre = ({
                         swatch = (
                             <span style={{
                                 display: "inline-block",
-                                width: 12,
+                                width: 20,
                                 height: 12,
                                 marginRight: 10,
                                 background: color
@@ -433,7 +446,7 @@ const DashMaplibre = ({
                         swatch = (
                             <span style={{
                                 display: "inline-block",
-                                width: 12,
+                                width: 20,
                                 height: 12,
                                 marginRight: 10,
                                 background: "#ccc",
