@@ -175,25 +175,13 @@ const DashMaplibre = ({
 
     // Update basemap style if the basemap prop changes
     useEffect(() => {
-        if (!mapRef.current) {
-            return () => {};
-        }
+        if (!mapRef.current) {return;}
+        // Only update if the style actually changes
         const map = mapRef.current;
-
-        function updateStyle() {
+        // Accept both URL and object for basemap
+        if (typeof basemap === "string" || typeof basemap === "object") {
             map.setStyle(basemap);
         }
-
-        if (map.isStyleLoaded()) {
-            updateStyle();
-        } else {
-            // Wait for the style to load, then set the new style
-            map.once('styledata', updateStyle);
-        }
-        // Cleanup: remove listener if effect re-runs before style loads
-        return () => {
-            map.off('styledata', updateStyle);
-        };
     }, [basemap]);
 
     // Update layers
