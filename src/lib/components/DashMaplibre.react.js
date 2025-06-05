@@ -386,8 +386,7 @@ const DashMaplibre = ({
                 top: 0,
                 left: 0,
                 background: "#fff",
-                padding: 12,
-                borderRadius: 0,
+                padding: 6,
                 zIndex: 10,
                 boxShadow: "0 2px 8px rgba(0,0,0,0.13)",
                 minWidth: 120
@@ -406,31 +405,27 @@ const DashMaplibre = ({
                         swatch = (
                             <span style={{
                                 display: "inline-block",
-                                width: 16,
-                                height: 16,
-                                borderRadius: 8,
+                                width: 12,
+                                height: 12,
+                                borderRadius: 6,
                                 marginRight: 10,
-                                background: color,
-                                border: "1px solid #999"
+                                background: color
                             }} />
                         );
                     } else if (layer.type === "fill") {
                         swatch = (
                             <span style={{
                                 display: "inline-block",
-                                width: 16,
-                                height: 16,
-                                borderRadius: 2,
+                                width: 12,
+                                height: 12,
                                 marginRight: 10,
-                                background: color,
-                                border: "1px solid #999"
+                                background: color
                             }} />
                         );
                     } else if (layer.type === "line") {
                         swatch = (
                             <svg width={20} height={16} style={{marginRight: 10, verticalAlign: "middle"}}>
-                                <line x1={2} y1={8} x2={18} y2={8} stroke={color} strokeWidth={4} strokeLinecap="round" />
-                                <rect x={0} y={0} width={20} height={16} fill="none" stroke="#999" strokeWidth={1}/>
+                                <line x1={2} y1={8} x2={18} y2={8} stroke={color} strokeWidth={4}/>
                             </svg>
                         );
                     } else {
@@ -438,9 +433,8 @@ const DashMaplibre = ({
                         swatch = (
                             <span style={{
                                 display: "inline-block",
-                                width: 16,
-                                height: 16,
-                                borderRadius: 2,
+                                width: 12,
+                                height: 12,
                                 marginRight: 10,
                                 background: "#ccc",
                                 border: "1px solid #999"
@@ -457,7 +451,6 @@ const DashMaplibre = ({
                                 cursor: "pointer",
                                 fontWeight: "normal",
                                 opacity: visibleLayers.includes(layer.id) ? 1 : 0.5,
-                                marginBottom: 5,
                                 userSelect: "none"
                             }}
                             onClick={() => {
