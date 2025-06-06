@@ -32,7 +32,6 @@ function interpolateTemplate(template, props) {
     });
 }
 
-
 const DashMaplibre = ({
     id,
     basemap = EMPTY_BASEMAP,
@@ -95,7 +94,7 @@ const DashMaplibre = ({
             console.debug("[DashMaplibre] Style loaded true");
             map.off('idle', onIdle);
         }
-        
+        map.on('idle', onIdle);
         map.setStyle(basemap);
 
         return () => {
