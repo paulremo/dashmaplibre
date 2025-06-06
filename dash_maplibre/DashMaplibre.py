@@ -36,10 +36,6 @@ Keyword arguments:
 
 - colorbar_risk (dict; optional)
 
-- hover_html (string; optional)
-
-- hover_layer (string; optional)
-
 - layers (list; optional)
 
 - max_bounds (list; optional)
@@ -69,13 +65,11 @@ Keyword arguments:
         style: typing.Optional[typing.Any] = None,
         colorbar_map: typing.Optional[dict] = None,
         colorbar_risk: typing.Optional[dict] = None,
-        hover_layer: typing.Optional[str] = None,
-        hover_html: typing.Optional[str] = None,
         **kwargs
     ):
-        self._prop_names = ['id', 'basemap', 'bearing', 'center', 'colorbar_map', 'colorbar_risk', 'hover_html', 'hover_layer', 'layers', 'max_bounds', 'pitch', 'sources', 'style', 'zoom']
+        self._prop_names = ['id', 'basemap', 'bearing', 'center', 'colorbar_map', 'colorbar_risk', 'layers', 'max_bounds', 'pitch', 'sources', 'style', 'zoom']
         self._valid_wildcard_attributes =            []
-        self.available_properties = ['id', 'basemap', 'bearing', 'center', 'colorbar_map', 'colorbar_risk', 'hover_html', 'hover_layer', 'layers', 'max_bounds', 'pitch', 'sources', 'style', 'zoom']
+        self.available_properties = ['id', 'basemap', 'bearing', 'center', 'colorbar_map', 'colorbar_risk', 'layers', 'max_bounds', 'pitch', 'sources', 'style', 'zoom']
         self.available_wildcard_properties =            []
         _explicit_args = kwargs.pop('_explicit_args')
         _locals = locals()

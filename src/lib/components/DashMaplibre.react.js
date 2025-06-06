@@ -11,7 +11,6 @@ const EMPTY_BASEMAP = {
   sources: {},
   layers: []
 };
-const RETRY_TIMEOUT_MS = 50;
 
 function interpolateTemplate(template, props) {
     return template.replace(/\{(\w+)(?::([.\d\w]+))?\}/g, (match, key, format) => {
@@ -185,7 +184,7 @@ const DashMaplibre = ({
                 const props = feature.properties;
                 const html = interpolateTemplate(hoverHtml, props);
                 if (!popups[layerId]) {
-                    popups[layerId] = new maplibregl.Popup({ closeButton: false, closeOnClick: false });
+                    popups[layerId] = new maplibregl.Popup({ closeButton: false, closeOnClick: false});
                 }
                 popups[layerId]
                     .setLngLat(feature.geometry.coordinates)

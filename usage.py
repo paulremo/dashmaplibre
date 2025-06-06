@@ -76,8 +76,7 @@ app.layout = html.Div([
     html.Button("Set Center & Zoom", id="center-zoom-btn", n_clicks=0, style={"marginBottom": "1em", "marginLeft": "1em"}),
     DashMaplibre(
         id="my-map",
-        center=[13.404954, 52.520008],
-        zoom=5,
+        zoom=8,
         colorbar_map={
             "stops": {0: ["#00f", "#66f"], 50: ["#6f6", "#ef0"], 100: ["#f00", "#f88"]},
             "title": "Map info",
@@ -97,6 +96,7 @@ app.layout = html.Div([
     Output("my-map", "sources"),
     Output("my-map", "layers"),
     Output("my-map", "basemap"),
+    Output("my-map", "center"),
     Input("init-btn", "n_clicks"),
     Input("color-btn", "n_clicks"),
     Input("add-layer-btn", "n_clicks"),
@@ -112,7 +112,7 @@ def update_map(n_init, n_color, n_add_layer, selected_point, current_sources, cu
     layers_patch = Patch()
 
     if triggered == "init-btn":
-        return initial_sources, initial_layers, initial_basemap
+        return initial_sources, initial_layers, initial_basemap, [13.404954, 52.520008]
 
 
     # Move point
@@ -161,11 +161,11 @@ def update_map(n_init, n_color, n_add_layer, selected_point, current_sources, cu
                     "Störfall: {stoerfall_str}"
                 ),
             }
-    return sources_patch, layers_patch, current_basemap
+    return sources_patch, layers_patch, current_basemap, dash.no_update
 
 # Set center and zoom via button
 @app.callback(
-    Output("my-map", "center"),
+    Output("my-map", "center", allow_duplicate=True),
     Output("my-map", "zoom"),
     Input("center-zoom-btn", "n_clicks"),
     prevent_initial_call=True
