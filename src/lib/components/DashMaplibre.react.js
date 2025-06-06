@@ -71,7 +71,17 @@ const DashMaplibre = ({
             });
             window._map = mapRef.current;
             mapRef.current.on('click', (e) => {
-                if (setProps) {setProps({ clickData: e.lngLat });}
+                // Query features at the clicked point
+                const features = mapRef.current.queryRenderedFeatures(e.point);
+                setProps({
+                    clickData: {
+                        features: features.map(f => ({
+                            id: f.id,
+                            layer: f.layer.id,
+                            properties: f.properties
+                        }))
+                    }
+                });
             });
         }
         return () => {
