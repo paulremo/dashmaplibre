@@ -1,5 +1,6 @@
 import dash
 from dash import html, dcc, Output, Input, State, Patch, ctx
+from dash.exceptions import PreventUpdate
 from dash_maplibre import DashMaplibre
 
 app = dash.Dash(__name__)
@@ -28,8 +29,38 @@ names = {
 # Circle colors to cycle through
 colors = ["#007cbf", "#e63946", "#2a9d8f", "#ffb703"]
 
+# Store your initial sources and layers as variables
+initial_sources = {
+    "my-points": {
+        "type": "geojson",
+        "data": {
+            "type": "FeatureCollection",
+            "features": [
+                {
+                    "type": "Feature",
+                    "geometry": {"type": "Point", "coordinates": [13.404954, 52.520008]},
+                    "properties": {"name": "Berlin"}
+                }
+            ]
+        }
+    }
+}
+initial_layers = [
+    {
+        "id": "points",
+        "display_name": "Point layer",
+        "type": "circle",
+        "source": "my-points",
+        "paint": {
+            "circle-radius": 8,
+            "circle-color": "#007cbf"
+        }
+    }
+]
+initial_basemap = "https://demotiles.maplibre.org/style.json"
+
 app.layout = html.Div([
-    html.H1("Dash MapLibre Demo"),
+    html.Button("Initialize Map", id="init-btn", n_clicks=0, style={"marginBottom": "1em"}),
     dcc.RadioItems(
         id="point-radio",
         options=[
@@ -46,26 +77,7 @@ app.layout = html.Div([
     DashMaplibre(
         id="my-map",
         center=[13.404954, 52.520008],
-        basemap="https://demotiles.maplibre.org/style.json",
         zoom=5,
-        sources={
-            "my-points": {
-                "type": "geojson",
-                "data": base_geojson
-            }
-        },
-        layers=[
-            {
-                "id": "points",
-                "display_name": "Point layer",
-                "type": "circle",
-                "source": "my-points",
-                "paint": {
-                    "circle-radius": 8,
-                    "circle-color": "#007cbf"
-                }
-            }
-        ],
         colorbar_map={
             "stops": {0: ["#00f", "#66f"], 50: ["#6f6", "#ef0"], 100: ["#f00", "#f88"]},
             "title": "Map info",
@@ -84,17 +96,25 @@ app.layout = html.Div([
 @app.callback(
     Output("my-map", "sources"),
     Output("my-map", "layers"),
+    Output("my-map", "basemap"),
+    Input("init-btn", "n_clicks"),
     Input("color-btn", "n_clicks"),
     Input("add-layer-btn", "n_clicks"),
     Input("point-radio", "value"),
     State("my-map", "sources"),
     State("my-map", "layers"),
+    State("my-map", "basemap"),
     prevent_initial_call=True
 )
-def update_map(n_color, n_add_layer, selected_point, current_sources, current_layers):
+def update_map(n_init, n_color, n_add_layer, selected_point, current_sources, current_layers, current_basemap):
     triggered = ctx.triggered_id
     sources_patch = Patch()
     layers_patch = Patch()
+
+    if triggered == "init-btn":
+        return initial_sources, initial_layers, initial_basemap
+
+
     # Move point
     if triggered == "point-radio":
         sources_patch["my-points"]["data"]["features"][0]["geometry"]["coordinates"] = coords[selected_point]
@@ -131,6 +151,7 @@ def update_map(n_color, n_add_layer, selected_point, current_sources, current_la
                     "circle-color": "#e63946",
                     "circle-opacity": ["interpolate", ["linear"], ["zoom"], 4, 0, 15, 0.6],
                 },
+                "minzoom": 4,
                 "hover_html": (
                     "<strong>{name}</strong><br/>"
                     "Risiko: {risk}<br/>"
@@ -140,7 +161,7 @@ def update_map(n_color, n_add_layer, selected_point, current_sources, current_la
                     "Störfall: {stoerfall_str}"
                 ),
             }
-    return sources_patch, layers_patch
+    return sources_patch, layers_patch, current_basemap
 
 # Set center and zoom via button
 @app.callback(

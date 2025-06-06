@@ -1,34 +1,28 @@
+/* eslint-disable consistent-return */
 import React, { useRef, useEffect, useState } from "react";
 import PropTypes from "prop-types";
 import maplibregl from "maplibre-gl";
 import 'maplibre-gl/dist/maplibre-gl.css';
 import Colorbar from './Colorbar.react.js';
 
-const EMPTY_STYLE = {
+const EMPTY_BASEMAP = {
   version: 8,
+  name: "Empty",
   sources: {},
   layers: []
 };
 const RETRY_TIMEOUT_MS = 50;
 
-const areLayersEqual = (layerA, layerB) => {
-    return JSON.stringify(layerA) === JSON.stringify(layerB);
-};
-
-
 function interpolateTemplate(template, props) {
-    // Match {key} or {key:.2f} or {key:.2e}
     return template.replace(/\{(\w+)(?::([.\d\w]+))?\}/g, (match, key, format) => {
         const value = props[key];
         if (value === null) {return '';}
         if (format && typeof value === 'number') {
-            // .2f (fixed-point)
             const fixedMatch = format.match(/^\.([0-9]+)f$/);
             if (fixedMatch) {
                 const decimals = parseInt(fixedMatch[1], 10);
                 return value.toFixed(decimals);
             }
-            // .2e (exponential)
             const expMatch = format.match(/^\.([0-9]+)e$/);
             if (expMatch) {
                 const decimals = parseInt(expMatch[1], 10);
@@ -39,15 +33,9 @@ function interpolateTemplate(template, props) {
     });
 }
 
-
-/**
- * DashMaplibre Component
- *
- * A component exposing the MapLibre GL JS library for use in Dash applications.
- */
 const DashMaplibre = ({
     id,
-    basemap = EMPTY_STYLE,
+    basemap = EMPTY_BASEMAP,
     center = [0, 0],
     zoom = 2,
     max_bounds = null,
@@ -65,15 +53,16 @@ const DashMaplibre = ({
     const mapRef = useRef(null);
     const prevLayersRef = useRef([]);
     const [visibleLayers, setVisibleLayers] = useState(() => layers.filter(l => l.display_name).map(l => l.id));
+    const [styleLoaded, setStyleLoaded] = useState(false);
     const savedViewRef = useRef({ center, zoom });
     const legendLayers = layers.filter(l => l.display_name);
 
-    // Initialize map
+    // 1. Initialize map only once
     useEffect(() => {
+        console.debug("[DashMaplibre] useEffect: map init");
         if (!mapRef.current) {
             mapRef.current = new maplibregl.Map({
                 container: mapContainer.current,
-                style: basemap,
                 center,
                 zoom,
                 bearing,
@@ -81,18 +70,13 @@ const DashMaplibre = ({
                 maxBounds: max_bounds,
                 ...otherProps
             });
-
-            // Expose map instance for debugging
             window._map = mapRef.current;
-
             mapRef.current.on('click', (e) => {
-                if (setProps) {
-                    setProps({ clickData: e.lngLat });
-                }
+                if (setProps) {setProps({ clickData: e.lngLat });}
             });
         }
-
         return () => {
+            console.debug("[DashMaplibre] useEffect cleanup: map init");
             if (mapRef.current) {
                 mapRef.current.remove();
                 mapRef.current = null;
@@ -100,210 +84,103 @@ const DashMaplibre = ({
         };
     }, []);
 
+    // 2. Handle basemap (style) changes
     useEffect(() => {
-        if (!mapRef.current) {
-            return () => {};
-        }
+        console.debug("[DashMaplibre] useEffect: basemap change", basemap);
+        if (!mapRef.current) {return;}
         const map = mapRef.current;
+        setStyleLoaded(false);
+        console.debug("[DashMaplibre] Style loaded false");
+        prevLayersRef.current = [];
 
-        // Disable default double-click zoom
-        map.doubleClickZoom.disable();
-
-        function handleDblClick(_e) {
-            if (savedViewRef.current) {
-                console.debug("Restoring saved view state:", savedViewRef.current);
-                map.flyTo({
-                    center: savedViewRef.current.center,
-                    zoom: savedViewRef.current.zoom,
-                    bearing: 0,
-                    pitch: 0,});
-            }
+        function onIdle() {
+            setStyleLoaded(true);
+            console.debug("[DashMaplibre] Style loaded true");
+            map.off('idle', onIdle);
         }
+        map.on('idle', onIdle);
+        map.setStyle(basemap);
 
-        map.on('dblclick', handleDblClick);
         return () => {
-            map.off('dblclick', handleDblClick);
+            console.debug("[DashMaplibre] useEffect cleanup: basemap change");
+            map.off('idle', onIdle);
         };
-    }, []);
+    }, [basemap]);
 
-    // Keep visibility in sync with map
+    // 3. Add/update sources after style is loaded
     useEffect(() => {
-        if (!mapRef.current) {return;}
-        layers.forEach(layer => {
-            if (!layer.display_name) {return;}
-            if (mapRef.current.getLayer(layer.id)) {
-                mapRef.current.setLayoutProperty(
-                    layer.id,
-                    "visibility",
-                    visibleLayers.includes(layer.id) ? "visible" : "none"
-                );
-            }
-        });
-    }, [visibleLayers, layers]);
-
-    // When layers prop changes, sync visibleLayers state (preserving toggled-off)
-    useEffect(() => {
-        const validIds = layers.filter(l => l.display_name).map(l => l.id);
-        setVisibleLayers(vs => {
-            // Only update if the visible layers actually need to change
-            if (
-                vs.length === validIds.length &&
-                vs.every((id, i) => id === validIds[i])
-            ) {
-                return vs;
-            }
-            return validIds;
-        });
-    }, [layers]);
-
-    // Update sources
-    useEffect(() => {
-        if (!mapRef.current) {return;}
+        console.debug("[DashMaplibre] useEffect: sources update", sources, styleLoaded);
+        if (!mapRef.current || !styleLoaded) {return;}
         const map = mapRef.current;
         Object.entries(sources).forEach(([id, src]) => {
             if (!map.getSource(id)) {
-                try {
-                    map.addSource(id, src);
-                } catch (err) {
-                    // Optionally log error
-                }
+                console.debug("[DashMaplibre] Adding source:", id, src);
+                try { map.addSource(id, src); } catch (err) {}
             } else if (src.type === "geojson") {
+                console.debug("[DashMaplibre] Updating source data:", id, src.data);
                 map.getSource(id).setData(src.data);
             }
         });
-    }, [sources]);
+    }, [sources, styleLoaded]);
 
-    // Update basemap style if the basemap prop changes
+    // 4. Add/remove/update app layers after style and sources are ready
     useEffect(() => {
-        if (!mapRef.current) {return;}
-        // Only update if the style actually changes
+        console.debug("[DashMaplibre] useEffect: app layers update", layers, sources, styleLoaded);
+        if (!mapRef.current || !styleLoaded) {return;}
         const map = mapRef.current;
-        // Accept both URL and object for basemap
-        if (typeof basemap === "string" || typeof basemap === "object") {
-            map.setStyle(basemap);
-        }
-    }, [basemap]);
 
-    // Update layers
-    useEffect(() => {
-        if (!mapRef.current) {
-            return () => {};
-        }
-        const map = mapRef.current;
-        let retryTimeout = null;
-
-        function updateSourcesAndLayers() {
-            // 1. Add sources
-            console.debug("Updating sources and layers");
-            Object.entries(sources).forEach(([id, src]) => {
-                if (!map.getSource(id)) {
-                    try { map.addSource(id, src); } catch (err) {
-                        // Intentionally ignore errors when adding source (may already exist)
-                    }
-                } else if (src.type === "geojson") {
-                    map.getSource(id).setData(src.data);
-                }
-            });
-
-            // 2. Remove layers no longer present
-            console.debug("Removing old layers");
-            const prevLayers = prevLayersRef.current;
-            const currLayerIds = new Set(layers.map(l => l.id));
-            prevLayers.forEach(layer => {
-                if (!currLayerIds.has(layer.id) && map.getLayer(layer.id)) {
-                    map.removeLayer(layer.id);
-                }
-            });
-
-            // 3. Add new layers and update changed layers
-            let skipped = false;
-            layers.forEach((layer, idx) => {
-                console.debug(`Processing layer ${layer.id} (${idx + 1}/${layers.length})`);
-                const onMap = map.getLayer(layer.id);
-                const prevLayer = prevLayers.find(l => l.id === layer.id);
-
-                // Only add if source exists
-                if (!map.getSource(layer.source)) {
-                    console.debug(`Skipping layer ${layer.id} - source ${layer.source} not found`);
-                    skipped = true;
-                    return;
-                }
-
-                if (!onMap) {
-                    console.debug(`Adding layer ${layer.id}`);
-                    let beforeId = null;
-                    for (let i = idx + 1; i < layers.length; i++) {
-                        if (map.getLayer(layers[i].id)) {
-                            beforeId = layers[i].id;
-                            break;
-                        }
-                    }
-                    try {
-                        map.addLayer(layer, beforeId);
-                    } catch (err) {
-                        console.error(`Failed to add layer ${layer.id}:`, err, layer);
-                    }
-                } else if (!areLayersEqual(layer, prevLayer)) {
-                    console.debug(`Updating layer ${layer.id}`);
-                    map.removeLayer(layer.id);
-                    let beforeId = null;
-                    for (let i = idx + 1; i < layers.length; i++) {
-                        if (map.getLayer(layers[i].id)) {
-                            beforeId = layers[i].id;
-                            break;
-                        }
-                    }
-                    try {
-                        map.addLayer(layer, beforeId);
-                    } catch (err) {
-                        console.error(`Failed to update layer ${layer.id}:`, err, layer);
-                    }
-                }
-            });
-
-            // Only update prevLayersRef when all layers processed
-            if (skipped) {
-                retryTimeout = setTimeout(updateSourcesAndLayers, RETRY_TIMEOUT_MS);
-            } else {
-                prevLayersRef.current = layers;
+        // Remove app layers whose source is missing or which are no longer in the layers prop
+        prevLayersRef.current.forEach(layer => {
+            const sourceExists = Boolean(map.getSource(layer.source));
+            const stillInLayers = layers.some(l => l.id === layer.id);
+            if ((!sourceExists || !stillInLayers) && map.getLayer(layer.id)) {
+                console.debug("[DashMaplibre] Removing app layer:", layer.id);
+                map.removeLayer(layer.id);
             }
-        }
+        });
 
- 
-        console.debug("Updating sources and layers (immediate call)");
-        updateSourcesAndLayers();
-        if (!map.isStyleLoaded()) {
-            console.debug("Map style not loaded, also waiting for load event");
-            map.once('load', updateSourcesAndLayers);
-        }
+        // Add app layers whose source exists and which are not already on the map
+        layers.forEach((layer, idx) => {
+            const sourceExists = Boolean(map.getSource(layer.source));
+            if (!sourceExists) {
+                console.warn("[DashMaplibre] Not adding app layer (missing source):", layer.id, "source:", layer.source);
+                return;
+            }
+            if (!map.getLayer(layer.id)) {
+                // Find the next layer in the list that is already on the map to insert before
+                let beforeId = null;
+                for (let i = idx + 1; i < layers.length; i++) {
+                    if (map.getLayer(layers[i].id)) {
+                        beforeId = layers[i].id;
+                        break;
+                    }
+                }
+                console.debug("[DashMaplibre] Adding app layer:", layer.id, "before", beforeId);
+                try { map.addLayer(layer, beforeId); } catch (err) { console.warn("addLayer failed", layer.id, err); }
+            }
+            // Patch properties for all existing layers
+            patchLayerProperties(map, layer);
+        });
 
-        return () => {
-            if (retryTimeout) {clearTimeout(retryTimeout);}
-        };
-    }, [layers, sources]);
+        // Update prevLayersRef to only track app layers
+        prevLayersRef.current = layers.slice();
+    }, [layers, sources, styleLoaded]);
 
-    // Hover popups for all layers with hover_html
+    // 5. Hover popups for layers with hover_html
     useEffect(() => {
-        if (!mapRef.current) {
-            return () => {};
-        }
+        console.debug("[DashMaplibre] useEffect: hover popups", layers, sources, styleLoaded);
+        if (!mapRef.current) {return;}
         const map = mapRef.current;
         const popups = {};
         const handlers = {};
 
-        // Attach listeners for each layer with hover_html
         layers.forEach(layer => {
-            if (!layer.hover_html) { return; }
+            if (!layer.hover_html) {return;}
             const layerId = layer.id;
             const hoverHtml = layer.hover_html;
 
             function onMouseEnter(e) {
                 const feature = e.features[0];
-                // Check opacity before showing popup
-                const opacity = feature.layer.paint && feature.layer.paint["circle-opacity"];
-                console.debug(`Mouse enter on layer ${layerId}, opacity: ${opacity}`);
-                if (opacity === 0) { return; }
-
                 map.getCanvas().style.cursor = 'pointer';
                 const props = feature.properties;
                 const html = interpolateTemplate(hoverHtml, props);
@@ -315,27 +192,24 @@ const DashMaplibre = ({
                     .setHTML(html)
                     .addTo(map);
             }
-
             function onMouseLeave() {
                 map.getCanvas().style.cursor = '';
                 if (popups[layerId]) {
                     popups[layerId].remove();
                 }
             }
-
             handlers[layerId] = { onMouseEnter, onMouseLeave };
-
-            // Attach only if the layer exists
             if (map.getLayer(layerId)) {
                 map.on('mouseenter', layerId, onMouseEnter);
                 map.on('mouseleave', layerId, onMouseLeave);
             }
         });
 
-        // Clean up: remove listeners and popups for removed layers
+        // Cleanup
         return () => {
+            console.debug("[DashMaplibre] useEffect cleanup: hover popups");
             layers.forEach(layer => {
-                if (!layer.hover_html) { return; }
+                if (!layer.hover_html) {return;}
                 const layerId = layer.id;
                 const h = handlers[layerId];
                 if (h && map.getLayer(layerId)) {
@@ -348,20 +222,16 @@ const DashMaplibre = ({
                 }
             });
         };
-    }, [layers, sources]);
+    }, [layers, sources, styleLoaded]);
 
-    // Update camera when center, zoom, bearing, or pitch change
+    // 6. Camera updates
     useEffect(() => {
+        console.debug("[DashMaplibre] useEffect: camera update", center, zoom, bearing, pitch);
         if (!mapRef.current) {return;}
         const map = mapRef.current;
-
-        // Save latest prop-driven view
         if (center && typeof zoom === "number") {
-            console.debug("Saving view state:", { center, zoom });
             savedViewRef.current = { center, zoom };
         }
-
-        // Only update if the value actually changed
         if (center) {
             const curr = map.getCenter();
             if (curr.lng !== center[0] || curr.lat !== center[1]) {
@@ -379,6 +249,61 @@ const DashMaplibre = ({
         }
     }, [center, zoom, bearing, pitch]);
 
+    // 7. Layer visibility toggling
+    useEffect(() => {
+        console.debug("[DashMaplibre] useEffect: layer visibility", visibleLayers, layers, styleLoaded);
+        if (!mapRef.current) {return;}
+        layers.forEach(layer => {
+            if (!layer.display_name) {return;}
+            if (mapRef.current.getLayer(layer.id)) {
+                mapRef.current.setLayoutProperty(
+                    layer.id,
+                    "visibility",
+                    visibleLayers.includes(layer.id) ? "visible" : "none"
+                );
+            }
+        });
+    }, [visibleLayers, layers, styleLoaded]);
+
+    // 8. Sync visibleLayers state with layers prop
+    useEffect(() => {
+        console.debug("[DashMaplibre] useEffect: sync visibleLayers", layers);
+        const validIds = layers.filter(l => l.display_name).map(l => l.id);
+        setVisibleLayers(vs => {
+            if (
+                vs.length === validIds.length &&
+                vs.every((id, i) => id === validIds[i])
+            ) {
+                return vs;
+            }
+            return validIds;
+        });
+    }, [layers]);
+
+    // 9. Double-click to restore view
+    useEffect(() => {
+        console.debug("[DashMaplibre] useEffect: double-click restore view");
+        if (!mapRef.current) {return;}
+        const map = mapRef.current;
+        map.doubleClickZoom.disable();
+        function handleDblClick(_e) {
+            if (savedViewRef.current) {
+                map.flyTo({
+                    center: savedViewRef.current.center,
+                    zoom: savedViewRef.current.zoom,
+                    bearing: 0,
+                    pitch: 0,
+                });
+            }
+        }
+        map.on('dblclick', handleDblClick);
+        return () => { 
+            console.debug("[DashMaplibre] useEffect cleanup: double-click restore view");
+            map.off('dblclick', handleDblClick); 
+        };
+    }, []);
+
+    // 10. Render legend
     function renderLegend(legendLayers, visibleLayers, setVisibleLayers) {
         return (
             <div style={{
@@ -392,14 +317,12 @@ const DashMaplibre = ({
                 minWidth: 120
             }}>
                 {legendLayers.map(layer => {
-                    // Determine color and swatch type
                     let color =
                         layer.paint?.["circle-color"] ||
                         layer.paint?.["fill-color"] ||
                         layer.paint?.["line-color"] ||
                         "#ccc";
                     if (Array.isArray(color)) { color = "#ccc"; }
-
                     let swatch = null;
                     if (layer.type === "circle") {
                         swatch = (
@@ -430,7 +353,6 @@ const DashMaplibre = ({
                             </svg>
                         );
                     } else {
-                        // fallback: gray box
                         swatch = (
                             <span style={{
                                 display: "inline-block",
@@ -442,7 +364,6 @@ const DashMaplibre = ({
                             }} />
                         );
                     }
-
                     return (
                         <div
                             key={layer.id}
@@ -472,6 +393,57 @@ const DashMaplibre = ({
         );
     }
 
+    function patchLayerProperties(map, layer) {
+        const mapLayer = map.getLayer(layer.id);
+        if (!mapLayer) {return;}
+
+        // PATCH PAINT PROPERTIES
+        const paint = layer.paint || {};
+        // Set or update paint properties
+        Object.entries(paint).forEach(([k, v]) => {
+            try {
+                if (map.getPaintProperty(layer.id, k) !== v) {
+                    map.setPaintProperty(layer.id, k, v);
+                }
+            } catch (err) {}
+        });
+
+        // PATCH LAYOUT PROPERTIES
+        const layout = layer.layout || {};
+        Object.entries(layout).forEach(([k, v]) => {
+            try {
+                if (map.getLayoutProperty(layer.id, k) !== v) {
+                    map.setLayoutProperty(layer.id, k, v);
+                }
+            } catch (err) {}
+        });
+
+        // PATCH FILTER
+        if ('filter' in layer) {
+            try {
+                if (JSON.stringify(map.getFilter(layer.id)) !== JSON.stringify(layer.filter)) {
+                    map.setFilter(layer.id, layer.filter);
+                }
+            } catch (err) {}
+        }
+
+        // PATCH MINZOOM/MAXZOOM
+        if ('minzoom' in layer) {
+            try {
+                if (mapLayer.minzoom !== layer.minzoom) {
+                    map.setLayerZoomRange(layer.id, layer.minzoom, mapLayer.maxzoom);
+                }
+            } catch (err) {}
+        }
+        if ('maxzoom' in layer) {
+            try {
+                if (mapLayer.maxzoom !== layer.maxzoom) {
+                    map.setLayerZoomRange(layer.id, mapLayer.minzoom, layer.maxzoom);
+                }
+            } catch (err) {}
+        }
+    }
+
     return (
         <div
             style={{
@@ -484,7 +456,6 @@ const DashMaplibre = ({
             id={id}
         >
             <div style={{ flex: 1, minHeight: 0, minWidth: 0, position: "relative", display: "flex", flexDirection: "column" }}>
-                {/* Colorbars always matching map width */}
                 <div
                     style={{
                         display: "flex",
@@ -506,12 +477,10 @@ const DashMaplibre = ({
                         </div>
                     )}
                 </div>
-                {/* Map container */}
                 <div
                     ref={mapContainer}
                     style={{ width: "100%", height: "100%", flex: 1, minHeight: 0, minWidth: 0, position: "relative" }}
                 >
-                    {/* Legend container */}
                     {legendLayers.length > 0 && renderLegend(legendLayers, visibleLayers, setVisibleLayers)}
                 </div>
             </div>
@@ -520,70 +489,18 @@ const DashMaplibre = ({
 };
 
 DashMaplibre.propTypes = {
-    /**
-     * The ID of the component, used to identify it in Dash callbacks.
-     */
     id: PropTypes.string,
-    /**
-     * The basemap URL or json.
-     */
-    basemap: PropTypes.oneOfType([
-        PropTypes.string,
-        PropTypes.object
-    ]),
-    /**
-     * The center of the camera.
-     */
+    basemap: PropTypes.oneOfType([PropTypes.string, PropTypes.object]),
     center: PropTypes.array,
-     /**
-     * The zoom level of the camera.
-     */
     zoom: PropTypes.number,
-    /**
-     * The maximum bounds of the camera.
-     */
     max_bounds: PropTypes.array,
-    /**
-     * The bearing of the camera.
-     */
     bearing: PropTypes.number,
-    /**
-     * The pitch of the camera.
-     */
     pitch: PropTypes.number,
-    /**
-     * The maplibre sources dictionary.
-     */
     sources: PropTypes.object,
-    /**
-     * The maplibre layers list.
-     */
     layers: PropTypes.array,
-    /**
-     * Additional style properties for the map container.
-     */
     style: PropTypes.object,
-    /**
-     * Colorbar configuration for the map colorbar.
-     */
     colorbar_map: PropTypes.object,
-    /**
-     * Colorbar configuration for the risk colorbar.
-     */
     colorbar_risk: PropTypes.object,
-    /**
-     * The layer ID to attach hover events to.
-     */
-    hover_layer: PropTypes.string,
-    /**
-     * The HTML template for hover popups.
-     * Use {property_name} to interpolate properties from the hovered feature.
-     */
-    hover_html: PropTypes.string,
-    /**
-     * Callback function to set properties in Dash.
-     * This is called with the updated properties when the map state changes.
-     */
     setProps: PropTypes.func,
 };
 

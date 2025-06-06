@@ -6,7 +6,7 @@
 \title{DashMaplibre component}
 
 \description{
-DashMaplibre Component  A component exposing the MapLibre GL JS library for use in Dash applications.
+
 }
 
 \usage{
@@ -17,34 +17,33 @@ sources=NULL, style=NULL, zoom=NULL)
 }
 
 \arguments{
-\item{id}{Character. The ID of the component, used to identify it in Dash callbacks.}
+\item{id}{Character. }
 
-\item{basemap}{Character | named list. The basemap URL or json.}
+\item{basemap}{Character | named list. }
 
-\item{bearing}{Numeric. The bearing of the camera.}
+\item{bearing}{Numeric. }
 
-\item{center}{Unnamed list. The center of the camera.}
+\item{center}{Unnamed list. }
 
-\item{colorbar_map}{Named list. Colorbar configuration for the map colorbar.}
+\item{colorbar_map}{Named list. }
 
-\item{colorbar_risk}{Named list. Colorbar configuration for the risk colorbar.}
+\item{colorbar_risk}{Named list. }
 
-\item{hover_html}{Character. The HTML template for hover popups.
-Use {property_name} to interpolate properties from the hovered feature.}
+\item{hover_html}{Character. }
 
-\item{hover_layer}{Character. The layer ID to attach hover events to.}
+\item{hover_layer}{Character. }
 
-\item{layers}{Unnamed list. The maplibre layers list.}
+\item{layers}{Unnamed list. }
 
-\item{max_bounds}{Unnamed list. The maximum bounds of the camera.}
+\item{max_bounds}{Unnamed list. }
 
-\item{pitch}{Numeric. The pitch of the camera.}
+\item{pitch}{Numeric. }
 
-\item{sources}{Named list. The maplibre sources dictionary.}
+\item{sources}{Named list. }
 
-\item{style}{Named list. Additional style properties for the map container.}
+\item{style}{Named list. }
 
-\item{zoom}{Numeric. The zoom level of the camera.}
+\item{zoom}{Numeric. }
 }
 
 \value{named list of JSON elements corresponding to React.js properties and their values}

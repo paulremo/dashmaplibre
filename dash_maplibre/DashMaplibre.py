@@ -20,51 +20,35 @@ NumberType = typing.Union[
 
 class DashMaplibre(Component):
     """A DashMaplibre component.
-DashMaplibre Component
 
-A component exposing the MapLibre GL JS library for use in Dash applications.
 
 Keyword arguments:
 
-- id (string; optional):
-    The ID of the component, used to identify it in Dash callbacks.
+- id (string; optional)
 
-- basemap (string | dict; default {  version: 8,  sources: {},  layers: []}):
-    The basemap URL or json.
+- basemap (string | dict; default {  version: 8,  name: "Empty",  sources: {},  layers: []})
 
-- bearing (number; default 0):
-    The bearing of the camera.
+- bearing (number; default 0)
 
-- center (list; default [0, 0]):
-    The center of the camera.
+- center (list; default [0, 0])
 
-- colorbar_map (dict; optional):
-    Colorbar configuration for the map colorbar.
+- colorbar_map (dict; optional)
 
-- colorbar_risk (dict; optional):
-    Colorbar configuration for the risk colorbar.
+- colorbar_risk (dict; optional)
 
-- hover_html (string; optional):
-    The HTML template for hover popups.  Use {property_name} to
-    interpolate properties from the hovered feature.
+- hover_html (string; optional)
 
-- hover_layer (string; optional):
-    The layer ID to attach hover events to.
+- hover_layer (string; optional)
 
-- layers (list; optional):
-    The maplibre layers list.
+- layers (list; optional)
 
-- max_bounds (list; optional):
-    The maximum bounds of the camera.
+- max_bounds (list; optional)
 
-- pitch (number; default 0):
-    The pitch of the camera.
+- pitch (number; default 0)
 
-- sources (dict; optional):
-    The maplibre sources dictionary.
+- sources (dict; optional)
 
-- zoom (number; default 2):
-    The zoom level of the camera."""
+- zoom (number; default 2)"""
     _children_props = []
     _base_nodes = ['children']
     _namespace = 'dash_maplibre'
