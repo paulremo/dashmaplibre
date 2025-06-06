@@ -223,7 +223,7 @@ const DashMaplibre = ({
     // 6. Camera updates
     useEffect(() => {
         console.debug("[DashMaplibre] useEffect: camera update", center, zoom, bearing, pitch);
-        if (!mapRef.current) {return;}
+        if (!mapRef.current || !styleLoaded) {return;}
         const map = mapRef.current;
         if (center && typeof zoom === "number") {
             savedViewRef.current = { center, zoom };
@@ -243,7 +243,7 @@ const DashMaplibre = ({
         if (typeof pitch === "number" && map.getPitch() !== pitch) {
             map.setPitch(pitch);
         }
-    }, [center, zoom, bearing, pitch]);
+    }, [center, zoom, bearing, pitch, styleLoaded]);
 
     // 7. Layer visibility toggling
     useEffect(() => {
