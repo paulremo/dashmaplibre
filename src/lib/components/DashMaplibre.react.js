@@ -315,11 +315,8 @@ const DashMaplibre = ({
                         clickData: {
                             layer: layerId,
                             features: e.features.map(f => ({
-                                id: f.id,
-                                properties: f.properties,
-                                geometry: f.geometry
-                            })),
-                            lngLat: e.lngLat
+                                properties: f.properties
+                            }))
                         }
                     });
                 }
