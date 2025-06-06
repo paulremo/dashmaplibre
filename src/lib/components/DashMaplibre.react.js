@@ -70,19 +70,6 @@ const DashMaplibre = ({
                 ...otherProps
             });
             window._map = mapRef.current;
-            mapRef.current.on('click', (e) => {
-                // Query features at the clicked point
-                const features = mapRef.current.queryRenderedFeatures(e.point);
-                setProps({
-                    clickData: {
-                        features: features.map(f => ({
-                            id: f.id,
-                            layer: f.layer.id,
-                            properties: f.properties
-                        }))
-                    }
-                });
-            });
         }
         return () => {
             console.debug("[DashMaplibre] useEffect cleanup: map init");
@@ -312,7 +299,52 @@ const DashMaplibre = ({
         };
     }, []);
 
-    // 10. Render legend
+    // 10. Handle layer clicks
+    useEffect(() => {
+        if (!mapRef.current) {return;}
+        const map = mapRef.current;
+        const handlers = {};
+
+        layers.forEach(layer => {
+            if (!layer.send_click) {return;}
+            const layerId = layer.id;
+
+            function onLayerClick(e) {
+                if (setProps && e.features && e.features.length > 0) {
+                    setProps({
+                        clickData: {
+                            layer: layerId,
+                            features: e.features.map(f => ({
+                                id: f.id,
+                                properties: f.properties,
+                                geometry: f.geometry
+                            })),
+                            lngLat: e.lngLat
+                        }
+                    });
+                }
+            }
+
+            handlers[layerId] = onLayerClick;
+            if (map.getLayer(layerId)) {
+                map.on('click', layerId, onLayerClick);
+            }
+        });
+
+        // Cleanup
+        return () => {
+            layers.forEach(layer => {
+                if (!layer.send_click) {return;}
+                const layerId = layer.id;
+                const handler = handlers[layerId];
+                if (handler && map.getLayer(layerId)) {
+                    map.off('click', layerId, handler);
+                }
+            });
+        };
+    }, [layers, sources, styleLoaded]);
+
+    // 11. Render legend
     function renderLegend(legendLayers, visibleLayers, setVisibleLayers) {
         return (
             <div style={{
@@ -402,6 +434,7 @@ const DashMaplibre = ({
         );
     }
 
+    // 12. Patch layer properties
     function patchLayerProperties(map, layer) {
         const mapLayer = map.getLayer(layer.id);
         if (!mapLayer) {return;}
