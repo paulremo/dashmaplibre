@@ -158,12 +158,6 @@ const DashMaplibre = ({
             patchLayerProperties(map, layer);
         });
 
-        // set the camera
-        map.setCenter(savedViewRef.current.center)
-        map.setZoom(savedViewRef.current.zoom)
-        map.setBearing(0)
-        map.setPitch(0)
-
         // Update prevLayersRef to only track app layers
         prevLayersRef.current = layers.slice();
     }, [layers, sources, styleLoaded]);
