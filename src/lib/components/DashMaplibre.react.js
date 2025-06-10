@@ -58,7 +58,6 @@ const DashMaplibre = ({
 
     // 1. Initialize map only once
     useEffect(() => {
-        console.debug("[DashMaplibre] useEffect: map init");
         if (!mapRef.current) {
             mapRef.current = new maplibregl.Map({
                 container: mapContainer.current,
@@ -72,7 +71,6 @@ const DashMaplibre = ({
             window._map = mapRef.current;
         }
         return () => {
-            console.debug("[DashMaplibre] useEffect cleanup: map init");
             if (mapRef.current) {
                 mapRef.current.remove();
                 mapRef.current = null;
@@ -82,38 +80,33 @@ const DashMaplibre = ({
 
     // 2. Handle basemap (style) changes
     useEffect(() => {
-        console.debug("[DashMaplibre] useEffect: basemap change", basemap);
         if (!mapRef.current) {return;}
         const map = mapRef.current;
         setStyleLoaded(false);
-        console.debug("[DashMaplibre] Style loaded false");
         prevLayersRef.current = [];
 
         function onIdle() {
             setStyleLoaded(true);
-            console.debug("[DashMaplibre] Style loaded true");
             map.off('idle', onIdle);
         }
         map.on('idle', onIdle);
         map.setStyle(basemap);
 
         return () => {
-            console.debug("[DashMaplibre] useEffect cleanup: basemap change");
             map.off('idle', onIdle);
         };
     }, [basemap]);
 
     // 3. Add/update sources after style is loaded
     useEffect(() => {
-        console.debug("[DashMaplibre] useEffect: sources update", sources, styleLoaded);
         if (!mapRef.current || !styleLoaded) {return;}
         const map = mapRef.current;
         Object.entries(sources).forEach(([id, src]) => {
             if (!map.getSource(id)) {
-                console.debug("[DashMaplibre] Adding source:", id, src);
-                try { map.addSource(id, src); } catch (err) {}
+                try { map.addSource(id, src); } catch (err) {
+                console.error(err);
+            }
             } else if (src.type === "geojson") {
-                console.debug("[DashMaplibre] Updating source data:", id, src.data);
                 map.getSource(id).setData(src.data);
             }
         });
@@ -121,7 +114,6 @@ const DashMaplibre = ({
 
     // 4. Add/remove/update app layers after style and sources are ready
     useEffect(() => {
-        console.debug("[DashMaplibre] useEffect: app layers update", layers, sources, styleLoaded);
         if (!mapRef.current || !styleLoaded) {return;}
         const map = mapRef.current;
 
@@ -130,7 +122,6 @@ const DashMaplibre = ({
             const sourceExists = Boolean(map.getSource(layer.source));
             const stillInLayers = layers.some(l => l.id === layer.id);
             if ((!sourceExists || !stillInLayers) && map.getLayer(layer.id)) {
-                console.debug("[DashMaplibre] Removing app layer:", layer.id);
                 map.removeLayer(layer.id);
             }
         });
@@ -151,7 +142,6 @@ const DashMaplibre = ({
                         break;
                     }
                 }
-                console.debug("[DashMaplibre] Adding app layer:", layer.id, "before", beforeId);
                 try { map.addLayer(layer, beforeId); } catch (err) { console.warn("addLayer failed", layer.id, err); }
             }
             // Patch properties for all existing layers
@@ -164,7 +154,6 @@ const DashMaplibre = ({
 
     // 5. Hover popups for layers with hover_html
     useEffect(() => {
-        console.debug("[DashMaplibre] useEffect: hover popups", layers, sources, styleLoaded);
         if (!mapRef.current) {return;}
         const map = mapRef.current;
         const popups = {};
@@ -203,7 +192,6 @@ const DashMaplibre = ({
 
         // Cleanup
         return () => {
-            console.debug("[DashMaplibre] useEffect cleanup: hover popups");
             layers.forEach(layer => {
                 if (!layer.hover_html) {return;}
                 const layerId = layer.id;
@@ -222,7 +210,6 @@ const DashMaplibre = ({
 
     // 6. Camera updates
     useEffect(() => {
-        console.debug("[DashMaplibre] useEffect: camera update", center, zoom, bearing, pitch);
         if (!mapRef.current || !styleLoaded) {return;}
         const map = mapRef.current;
         if (center && typeof zoom === "number") {
@@ -247,7 +234,6 @@ const DashMaplibre = ({
 
     // 7. Layer visibility toggling
     useEffect(() => {
-        console.debug("[DashMaplibre] useEffect: layer visibility", visibleLayers, layers, styleLoaded);
         if (!mapRef.current) {return;}
         layers.forEach(layer => {
             if (!layer.display_name) {return;}
@@ -263,7 +249,6 @@ const DashMaplibre = ({
 
     // 8. Sync visibleLayers state with layers prop
     useEffect(() => {
-        console.debug("[DashMaplibre] useEffect: sync visibleLayers", layers);
         const validIds = layers.filter(l => l.display_name).map(l => l.id);
         setVisibleLayers(vs => {
             if (
@@ -278,7 +263,6 @@ const DashMaplibre = ({
 
     // 9. Double-click to restore view
     useEffect(() => {
-        console.debug("[DashMaplibre] useEffect: double-click restore view");
         if (!mapRef.current) {return;}
         const map = mapRef.current;
         map.doubleClickZoom.disable();
@@ -294,7 +278,6 @@ const DashMaplibre = ({
         }
         map.on('dblclick', handleDblClick);
         return () => { 
-            console.debug("[DashMaplibre] useEffect cleanup: double-click restore view");
             map.off('dblclick', handleDblClick); 
         };
     }, []);
@@ -444,7 +427,9 @@ const DashMaplibre = ({
                 if (map.getPaintProperty(layer.id, k) !== v) {
                     map.setPaintProperty(layer.id, k, v);
                 }
-            } catch (err) {}
+            } catch (err) {
+                console.error(err);
+            }
         });
 
         // PATCH LAYOUT PROPERTIES
@@ -454,7 +439,9 @@ const DashMaplibre = ({
                 if (map.getLayoutProperty(layer.id, k) !== v) {
                     map.setLayoutProperty(layer.id, k, v);
                 }
-            } catch (err) {}
+            } catch (err) {
+                console.error(err);
+            }
         });
 
         // PATCH FILTER
@@ -463,7 +450,9 @@ const DashMaplibre = ({
                 if (JSON.stringify(map.getFilter(layer.id)) !== JSON.stringify(layer.filter)) {
                     map.setFilter(layer.id, layer.filter);
                 }
-            } catch (err) {}
+            } catch (err) {
+                console.error(err);
+            }
         }
 
         // PATCH MINZOOM/MAXZOOM
@@ -472,14 +461,18 @@ const DashMaplibre = ({
                 if (mapLayer.minzoom !== layer.minzoom) {
                     map.setLayerZoomRange(layer.id, layer.minzoom, mapLayer.maxzoom);
                 }
-            } catch (err) {}
+            } catch (err) {
+                console.error(err);
+            }
         }
         if ('maxzoom' in layer) {
             try {
                 if (mapLayer.maxzoom !== layer.maxzoom) {
                     map.setLayerZoomRange(layer.id, mapLayer.minzoom, layer.maxzoom);
                 }
-            } catch (err) {}
+            } catch (err) {
+                console.error(err);
+            }
         }
     }
 
