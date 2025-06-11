@@ -6,7 +6,7 @@
 \title{DashMaplibre component}
 
 \description{
-
+DashMaplibre is a React component for displaying interactive maps using MapLibre GL JS. It supports custom basemaps, layers, sources, and interactive features like hover popups and click events. It is designed to be used within a Dash application, allowing for dynamic updates and interactivity.  Dependencies: - maplibre-gl: For rendering maps and handling layers/sources. - Colorbar: A custom component for displaying colorbars alongside the map. - Mantine for styling and layout.
 }
 
 \usage{
@@ -17,29 +17,30 @@ zoom=NULL)
 }
 
 \arguments{
-\item{id}{Character. }
+\item{id}{Character. The unique ID of this component.}
 
-\item{basemap}{Character | named list. }
+\item{basemap}{Character | named list. The basemap style, either as a URL string to a MapLibre style JSON,
+or as a style JSON object.}
 
-\item{bearing}{Numeric. }
+\item{bearing}{Numeric. The bearing (rotation) of the map in degrees.}
 
-\item{center}{Unnamed list. }
+\item{center}{Unnamed list. The map center as a [longitude, latitude] array.}
 
-\item{colorbar_map}{Named list. }
+\item{colorbar_map}{Named list. Configuration for the colorbar legend for the map.}
 
-\item{colorbar_risk}{Named list. }
+\item{colorbar_risk}{Named list. Configuration for the colorbar legend for risk visualization.}
 
-\item{layers}{Unnamed list. }
+\item{layers}{Unnamed list. The array of MapLibre layer definitions to display on the map.}
 
-\item{max_bounds}{Unnamed list. }
+\item{max_bounds}{Unnamed list. The maximum bounds of the map as [[west, south], [east, north]].}
 
-\item{pitch}{Numeric. }
+\item{pitch}{Numeric. The pitch (tilt) of the map in degrees.}
 
-\item{sources}{Named list. }
+\item{sources}{Named list. The sources definition for MapLibre, as an object mapping source IDs to source definitions.}
 
-\item{style}{Named list. }
+\item{style}{Named list. Additional CSS styles to apply to the map container.}
 
-\item{zoom}{Numeric. }
+\item{zoom}{Numeric. The zoom level of the map.}
 }
 
 \value{named list of JSON elements corresponding to React.js properties and their values}

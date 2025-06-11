@@ -23,6 +23,16 @@ class Colorbar(Component):
 Colorbar Component
 
 A component creating a colorbar with the d3 library.
+It accepts a set of stops defining the color gradient, 
+a title, and optional labels for specific positions.
+It automatically adjusts to the width of its container
+and uses a ResizeObserver to handle responsive resizing.
+It also supports formatting of labels using d3-format
+or native JavaScript formatting.
+
+Dependencies:
+- d3: For creating the SVG elements and handling the color gradient.
+- Mantine: For styling and layout.
 
 Keyword arguments:
 

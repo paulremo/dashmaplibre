@@ -32,6 +32,16 @@ function interpolateTemplate(template, props) {
     });
 }
 
+/**
+    * DashMaplibre is a React component for displaying interactive maps using MapLibre GL JS.
+    * It supports custom basemaps, layers, sources, and interactive features like hover popups and click events.
+    * It is designed to be used within a Dash application, allowing for dynamic updates and interactivity.
+    * 
+    * Dependencies:
+    * - maplibre-gl: For rendering maps and handling layers/sources.
+    * - Colorbar: A custom component for displaying colorbars alongside the map.
+    * - Mantine for styling and layout.
+ */
 const DashMaplibre = ({
     id,
     basemap = EMPTY_BASEMAP,
@@ -331,7 +341,7 @@ const DashMaplibre = ({
                 position: "absolute",
                 top: 0,
                 left: 0,
-                background: "#fff",
+                background: "var(--mantine-color-body)",
                 padding: 6,
                 zIndex: 10,
                 boxShadow: "0 2px 8px rgba(0,0,0,0.13)",
@@ -521,18 +531,71 @@ const DashMaplibre = ({
 };
 
 DashMaplibre.propTypes = {
+
+    /**
+     * The unique ID of this component.
+     */
     id: PropTypes.string,
+
+    /**
+     * The basemap style, either as a URL string to a MapLibre style JSON,
+     * or as a style JSON object.
+     */
     basemap: PropTypes.oneOfType([PropTypes.string, PropTypes.object]),
+
+    /**
+     * The map center as a [longitude, latitude] array.
+     */
     center: PropTypes.array,
+
+    /**
+     * The zoom level of the map.
+     */
     zoom: PropTypes.number,
+
+    /**
+     * The maximum bounds of the map as [[west, south], [east, north]].
+     */
     max_bounds: PropTypes.array,
+
+    /**
+     * The bearing (rotation) of the map in degrees.
+     */
     bearing: PropTypes.number,
+
+    /**
+     * The pitch (tilt) of the map in degrees.
+     */
     pitch: PropTypes.number,
+
+    /**
+     * The sources definition for MapLibre, as an object mapping source IDs to source definitions.
+     */
     sources: PropTypes.object,
+
+    /**
+     * The array of MapLibre layer definitions to display on the map.
+     */
     layers: PropTypes.array,
+
+    /**
+     * Additional CSS styles to apply to the map container.
+     */
     style: PropTypes.object,
+
+    /**
+     * Configuration for the colorbar legend for the map.
+     */
     colorbar_map: PropTypes.object,
+
+    /**
+     * Configuration for the colorbar legend for risk visualization.
+     */
     colorbar_risk: PropTypes.object,
+
+    /**
+     * Dash callback setter for prop updates (provided by Dash).
+     */
     setProps: PropTypes.func,
 };
 

@@ -20,31 +20,51 @@ NumberType = typing.Union[
 
 class DashMaplibre(Component):
     """A DashMaplibre component.
+DashMaplibre is a React component for displaying interactive maps using MapLibre GL JS.
+It supports custom basemaps, layers, sources, and interactive features like hover popups and click events.
+It is designed to be used within a Dash application, allowing for dynamic updates and interactivity.
 
+Dependencies:
+- maplibre-gl: For rendering maps and handling layers/sources.
+- Colorbar: A custom component for displaying colorbars alongside the map.
+- Mantine for styling and layout.
 
 Keyword arguments:
 
-- id (string; optional)
+- id (string; optional):
+    The unique ID of this component.
 
-- basemap (string | dict; default {  version: 8,  name: "Empty",  sources: {},  layers: []})
+- basemap (string | dict; default {  version: 8,  name: "Empty",  sources: {},  layers: []}):
+    The basemap style, either as a URL string to a MapLibre style
+    JSON,  or as a style JSON object.
 
-- bearing (number; default 0)
+- bearing (number; default 0):
+    The bearing (rotation) of the map in degrees.
 
-- center (list; default [0, 0])
+- center (list; default [0, 0]):
+    The map center as a [longitude, latitude] array.
 
-- colorbar_map (dict; optional)
+- colorbar_map (dict; optional):
+    Configuration for the colorbar legend for the map.
 
-- colorbar_risk (dict; optional)
+- colorbar_risk (dict; optional):
+    Configuration for the colorbar legend for risk visualization.
 
-- layers (list; optional)
+- layers (list; optional):
+    The array of MapLibre layer definitions to display on the map.
 
-- max_bounds (list; optional)
+- max_bounds (list; optional):
+    The maximum bounds of the map as [[west, south], [east, north]].
 
-- pitch (number; default 0)
+- pitch (number; default 0):
+    The pitch (tilt) of the map in degrees.
 
-- sources (dict; optional)
+- sources (dict; optional):
+    The sources definition for MapLibre, as an object mapping source
+    IDs to source definitions.
 
-- zoom (number; default 2)"""
+- zoom (number; default 2):
+    The zoom level of the map."""
     _children_props = []
     _base_nodes = ['children']
     _namespace = 'dash_maplibre'

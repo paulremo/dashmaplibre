@@ -2,8 +2,10 @@ import dash
 from dash import html, dcc, Output, Input, State, Patch, ctx
 from dash.exceptions import PreventUpdate
 from dash_maplibre import DashMaplibre
+import dash_mantine_components as dmc
 
 app = dash.Dash(__name__)
+dash._dash_renderer._set_react_version("18.2.0")
 
 # The initial GeoJSON with a single point
 base_geojson = {
@@ -59,7 +61,7 @@ initial_layers = [
 ]
 initial_basemap = "https://demotiles.maplibre.org/style.json"
 
-app.layout = html.Div([
+app.layout = dmc.MantineProvider(html.Div([
     html.Button("Initialize Map", id="init-btn", n_clicks=0, style={"marginBottom": "1em"}),
     dcc.RadioItems(
         id="point-radio",
@@ -89,7 +91,7 @@ app.layout = html.Div([
         },
         style={"width": "800px", "height": "500px"}
     )
-])
+]), forceColorScheme="dark")
 
 # Update coordinates, color, and add layer
 @app.callback(
