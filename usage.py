@@ -79,10 +79,15 @@ app.layout = dmc.MantineProvider(html.Div([
     DashMaplibre(
         id="my-map",
         zoom=8,
-        colorbar_map={
+        colorbar_map={0: {
             "stops": {0: ["#00f", "#66f"], 50: ["#6f6", "#ef0"], 100: ["#f00", "#f88"]},
             "title": "Map info",
             "labels": {"0": "Low", "1": "High", "0.5": "Medium"}
+        }, 10: {
+            "stops": {0: ["#00f", "#66f"], 50: ["#6f6", "#ef0"], 100: ["#f00", "#f88"]},
+            "title": "Zoom Map info",
+            "labels": {"0": "Zoom Low", "1": "Zoom High", "0.5": "Zoom Medium"}
+        }
         },
         colorbar_risk={
             "stops": {0: ["#fff", "#ccc"], 1: ["#000", "#333"]},

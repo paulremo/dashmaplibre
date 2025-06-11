@@ -45,7 +45,14 @@ Keyword arguments:
     The map center as a [longitude, latitude] array.
 
 - colorbar_map (dict; optional):
-    Configuration for the colorbar legend for the map.
+    Configuration for the colorbar legend for the map.  Can be a
+    single colorbar config object, or a dictionary where keys are zoom
+    levels  (as numbers or strings) and values are colorbar config
+    objects. The colorbar for the  highest zoom key less than or equal
+    to the current zoom will be shown.
+
+    `colorbar_map` is a dict | dict with keys:
+
 
 - colorbar_risk (dict; optional):
     Configuration for the colorbar legend for risk visualization.
@@ -69,6 +76,12 @@ Keyword arguments:
     _base_nodes = ['children']
     _namespace = 'dash_maplibre'
     _type = 'DashMaplibre'
+    ColorbarMap = TypedDict(
+        "ColorbarMap",
+            {
+
+        }
+    )
 
 
     def __init__(
@@ -83,7 +96,7 @@ Keyword arguments:
         sources: typing.Optional[dict] = None,
         layers: typing.Optional[typing.Sequence] = None,
         style: typing.Optional[typing.Any] = None,
-        colorbar_map: typing.Optional[dict] = None,
+        colorbar_map: typing.Optional[typing.Union[dict, "ColorbarMap"]] = None,
         colorbar_risk: typing.Optional[dict] = None,
         **kwargs
     ):

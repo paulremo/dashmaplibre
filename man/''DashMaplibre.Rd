@@ -26,7 +26,12 @@ or as a style JSON object.}
 
 \item{center}{Unnamed list. The map center as a [longitude, latitude] array.}
 
-\item{colorbar_map}{Named list. Configuration for the colorbar legend for the map.}
+\item{colorbar_map}{Named list | lists containing elements .
+those elements have the following types:
+. Configuration for the colorbar legend for the map.
+Can be a single colorbar config object, or a dictionary where keys are zoom levels
+(as numbers or strings) and values are colorbar config objects. The colorbar for the
+highest zoom key less than or equal to the current zoom will be shown.}
 
 \item{colorbar_risk}{Named list. Configuration for the colorbar legend for risk visualization.}
 

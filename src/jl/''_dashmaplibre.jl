@@ -20,7 +20,12 @@ Keyword arguments:
 or as a style JSON object.
 - `bearing` (Real; optional): The bearing (rotation) of the map in degrees.
 - `center` (Array; optional): The map center as a [longitude, latitude] array.
-- `colorbar_map` (Dict; optional): Configuration for the colorbar legend for the map.
+- `colorbar_map` (optional): Configuration for the colorbar legend for the map.
+Can be a single colorbar config object, or a dictionary where keys are zoom levels
+(as numbers or strings) and values are colorbar config objects. The colorbar for the
+highest zoom key less than or equal to the current zoom will be shown.. colorbar_map has the following type: Dict | lists containing elements .
+Those elements have the following types:
+
 - `colorbar_risk` (Dict; optional): Configuration for the colorbar legend for risk visualization.
 - `layers` (Array; optional): The array of MapLibre layer definitions to display on the map.
 - `max_bounds` (Array; optional): The maximum bounds of the map as [[west, south], [east, north]].

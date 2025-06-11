@@ -32,6 +32,35 @@ function interpolateTemplate(template, props) {
     });
 }
 
+// Helper to get the correct colorbar config for the current zoom
+function getColorbarForZoom(colorbar_map, zoom) {
+    if (!colorbar_map) {return null;}
+    if (typeof colorbar_map !== "object" || Array.isArray(colorbar_map)) {return colorbar_map;}
+
+    const keys = Object.keys(colorbar_map);
+    // Check if all keys are numeric (or can be parsed as numbers)
+    const allNumeric = keys.length > 0 && keys.every(k => !isNaN(Number(k)));
+
+    if (!allNumeric) {
+        // Legacy style: treat as a single colorbar config
+        return colorbar_map;
+    }
+
+    // colorbar_map is a dict: keys are zoom levels, values are colorbar configs
+    const zoomKeys = keys
+        .map(Number)
+        .sort((a, b) => a - b);
+    let chosen = null;
+    for (let i = 0; i < zoomKeys.length; i++) {
+        if (zoom >= zoomKeys[i]) {
+            chosen = colorbar_map[zoomKeys[i]];
+        } else {
+            break;
+        }
+    }
+    return chosen;
+}
+
 /**
     * DashMaplibre is a React component for displaying interactive maps using MapLibre GL JS.
     * It supports custom basemaps, layers, sources, and interactive features like hover popups and click events.
@@ -65,6 +94,8 @@ const DashMaplibre = ({
     const [styleLoaded, setStyleLoaded] = useState(false);
     const savedViewRef = useRef({ center, zoom });
     const legendLayers = layers.filter(l => l.display_name);
+    const [currentZoom, setCurrentZoom] = useState(zoom);
+
 
     // 1. Initialize map only once
     useEffect(() => {
@@ -486,6 +517,21 @@ const DashMaplibre = ({
         }
     }
 
+    // 13. Listen for zoom changes on the map
+    useEffect(() => {
+        if (!mapRef.current) {return;}
+        const map = mapRef.current;
+        function onZoom() {
+            setCurrentZoom(map.getZoom());
+        }
+        map.on('zoom', onZoom);
+        // Set initial zoom
+        setCurrentZoom(map.getZoom());
+        return () => {
+            map.off('zoom', onZoom);
+        };
+    }, [styleLoaded]);
+
     return (
         <div
             style={{
@@ -508,9 +554,9 @@ const DashMaplibre = ({
                         alignItems: "stretch"
                     }}
                 >
-                    {colorbar_map && (
+                    {getColorbarForZoom(colorbar_map, currentZoom) && (
                         <div style={{ flex: "1 1 0", minWidth: 0, padding: "0 8px"}}>
-                            <Colorbar {...colorbar_map} />
+                            <Colorbar {...getColorbarForZoom(colorbar_map, currentZoom)} />
                         </div>
                     )}
                     {colorbar_risk && (
@@ -585,8 +631,17 @@ DashMaplibre.propTypes = {
 
     /**
      * Configuration for the colorbar legend for the map.
+     * Can be a single colorbar config object, or a dictionary where keys are zoom levels
+     * (as numbers or strings) and values are colorbar config objects. The colorbar for the
+     * highest zoom key less than or equal to the current zoom will be shown.
      */
-    colorbar_map: PropTypes.object,
+    colorbar_map: PropTypes.oneOfType([
+        PropTypes.object, 
+        PropTypes.shape({
+            // keys: zoom levels (as string or number), values: colorbar config objects
+            // This is a loose check; for stricter validation, use custom PropType
+        })
+    ]),
 
     /**
      * Configuration for the colorbar legend for risk visualization.
