@@ -1,6 +1,6 @@
 {
   "name": "dash_maplibre",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "A project for a custom dash component exposing maplibre",
   "main": "build/index.js",
   "scripts": {
@@ -16,6 +16,7 @@
   "author": "Paul-Remo Wagner <wagner@matrisk.com>",
   "license": "MIT",
   "dependencies": {
+    "mathjs": "^14.5.2",
     "ramda": "^0.26.1"
   },
   "devDependencies": {

@@ -1,6 +1,8 @@
 import React, { useRef, useEffect, useState } from "react";
 import PropTypes from "prop-types";
 import * as d3 from "d3";
+import { evaluate } from "mathjs";
+
 
 const DEFAULT_BAR_HEIGHT = 24;
 const DEFAULT_TITLE_HEIGHT = 24;
@@ -12,6 +14,39 @@ const LABEL_FONT_SIZE = 12;
 const TITLE_FONT_SIZE = 14;
 const LABEL_POSITION_DECIMALS = 4;
 const MIN_LABEL_SPACING = 200;
+
+
+function formatValueWithMath(val, format) {
+    if (!format) {return val.toString();}
+
+    // Check for math expression, e.g., "1/_val.2f"
+    // We'll split at the last dot followed by a format specifier
+    const match = format.match(/^(.*_val)(\.[0-9a-zA-Z%]+)$/);
+    if (match) {
+        const mathExpr = match[1].replace(/_val/g, `(${val})`);
+        const d3Format = match[2];
+        let mathResult = val;
+        try {
+            mathResult = evaluate(mathExpr);
+        } catch (e) {
+            // fallback to original value if math fails
+            mathResult = val;
+        }
+        try {
+            return d3.format(d3Format)(mathResult);
+        } catch (e) {
+            return mathResult.toString();
+        }
+    } else {
+        // No math, just d3 format
+        try {
+            return d3.format(format)(val);
+        } catch (e) {
+            return val.toString();
+        }
+    }
+}
+
 
 /**
  * Colorbar Component
@@ -117,16 +152,7 @@ const Colorbar = ({
                     // Format value if format is provided
                     let labelText = v.toString();
                     if (format) {
-                        try {
-                            // Use d3-format if available, else fallback to JS
-                            if (typeof d3 !== "undefined" && d3.format) {
-                                labelText = d3.format(format)(v);
-                            } else {
-                                labelText = v.toLocaleString("en", { notation: format === ".2e" ? "scientific" : "standard" });
-                            }
-                        } catch (e) {
-                            labelText = v.toString();
-                        }
+                        labelText = formatValueWithMath(v, format);
                     }
                     return [p, labelText];
                 });
