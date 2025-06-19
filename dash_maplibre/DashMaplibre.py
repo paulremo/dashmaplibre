@@ -70,6 +70,10 @@ Keyword arguments:
     The sources definition for MapLibre, as an object mapping source
     IDs to source definitions.
 
+- version (string; default ""):
+    Optional version string to display in the lower right corner of
+    the legend.
+
 - zoom (number; default 2):
     The zoom level of the map."""
     _children_props = []
@@ -98,11 +102,12 @@ Keyword arguments:
         style: typing.Optional[typing.Any] = None,
         colorbar_map: typing.Optional[typing.Union[dict, "ColorbarMap"]] = None,
         colorbar_risk: typing.Optional[dict] = None,
+        version: typing.Optional[str] = None,
         **kwargs
     ):
-        self._prop_names = ['id', 'basemap', 'bearing', 'center', 'colorbar_map', 'colorbar_risk', 'layers', 'max_bounds', 'pitch', 'sources', 'style', 'zoom']
+        self._prop_names = ['id', 'basemap', 'bearing', 'center', 'colorbar_map', 'colorbar_risk', 'layers', 'max_bounds', 'pitch', 'sources', 'style', 'version', 'zoom']
         self._valid_wildcard_attributes =            []
-        self.available_properties = ['id', 'basemap', 'bearing', 'center', 'colorbar_map', 'colorbar_risk', 'layers', 'max_bounds', 'pitch', 'sources', 'style', 'zoom']
+        self.available_properties = ['id', 'basemap', 'bearing', 'center', 'colorbar_map', 'colorbar_risk', 'layers', 'max_bounds', 'pitch', 'sources', 'style', 'version', 'zoom']
         self.available_wildcard_properties =            []
         _explicit_args = kwargs.pop('_explicit_args')
         _locals = locals()

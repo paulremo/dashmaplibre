@@ -94,7 +94,8 @@ app.layout = dmc.MantineProvider(html.Div([
             "title": "Risk",
             "format": "1/_val.2f",
         },
-        style={"width": "800px", "height": "500px"}
+        style={"width": "800px", "height": "500px"},
+        version="my-test-version"
     )
 ]), forceColorScheme="dark")
 

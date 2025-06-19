@@ -13,7 +13,7 @@ DashMaplibre is a React component for displaying interactive maps using MapLibre
 ''DashMaplibre(id=NULL, basemap=NULL, bearing=NULL, center=NULL,
 colorbar_map=NULL, colorbar_risk=NULL, layers=NULL,
 max_bounds=NULL, pitch=NULL, sources=NULL, style=NULL,
-zoom=NULL)
+version=NULL, zoom=NULL)
 }
 
 \arguments{
@@ -44,6 +44,8 @@ highest zoom key less than or equal to the current zoom will be shown.}
 \item{sources}{Named list. The sources definition for MapLibre, as an object mapping source IDs to source definitions.}
 
 \item{style}{Named list. Additional CSS styles to apply to the map container.}
+
+\item{version}{Character. Optional version string to display in the lower right corner of the legend.}
 
 \item{zoom}{Numeric. The zoom level of the map.}
 }

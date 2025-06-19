@@ -32,10 +32,11 @@ Those elements have the following types:
 - `pitch` (Real; optional): The pitch (tilt) of the map in degrees.
 - `sources` (Dict; optional): The sources definition for MapLibre, as an object mapping source IDs to source definitions.
 - `style` (Dict; optional): Additional CSS styles to apply to the map container.
+- `version` (String; optional): Optional version string to display in the lower right corner of the legend.
 - `zoom` (Real; optional): The zoom level of the map.
 """
 function ''_dashmaplibre(; kwargs...)
-        available_props = Symbol[:id, :basemap, :bearing, :center, :colorbar_map, :colorbar_risk, :layers, :max_bounds, :pitch, :sources, :style, :zoom]
+        available_props = Symbol[:id, :basemap, :bearing, :center, :colorbar_map, :colorbar_risk, :layers, :max_bounds, :pitch, :sources, :style, :version, :zoom]
         wild_props = Symbol[]
         return Component("''_dashmaplibre", "DashMaplibre", "dash_maplibre", available_props, wild_props; kwargs...)
 end

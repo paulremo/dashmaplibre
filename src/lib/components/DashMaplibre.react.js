@@ -85,6 +85,7 @@ const DashMaplibre = ({
     colorbar_map = null,
     colorbar_risk = null,
     setProps,
+    version = "",
     ...otherProps
 }) => {
     const mapContainer = useRef(null);
@@ -366,7 +367,7 @@ const DashMaplibre = ({
     }, [layers, sources, styleLoaded]);
 
     // 11. Render legend
-    function renderLegend(legendLayers, visibleLayers, setVisibleLayers) {
+    function renderLegend(legendLayers, visibleLayers, setVisibleLayers, version) {
         return (
             <div style={{
                 position: "absolute",
@@ -451,6 +452,18 @@ const DashMaplibre = ({
                         </div>
                     );
                 })}
+                {version && (
+                    <div
+                        style={{
+                            textAlign: "right",
+                            color: "var(--mantine-color-text)",
+                            fontSize: "0.6em",
+                            userSelect: "none"
+                        }}
+                    >
+                        {version}
+                    </div>
+                )}
             </div>
         );
     }
@@ -569,7 +582,7 @@ const DashMaplibre = ({
                     ref={mapContainer}
                     style={{ width: "100%", height: "100%", flex: 1, minHeight: 0, minWidth: 0, position: "relative" }}
                 >
-                    {legendLayers.length > 0 && renderLegend(legendLayers, visibleLayers, setVisibleLayers)}
+                    {legendLayers.length > 0 && renderLegend(legendLayers, visibleLayers, setVisibleLayers, version)}
                 </div>
             </div>
         </div>
@@ -652,6 +665,11 @@ DashMaplibre.propTypes = {
      * Dash callback setter for prop updates (provided by Dash).
      */
     setProps: PropTypes.func,
+
+    /**
+     * Optional version string to display in the lower right corner of the legend.
+     */
+    version: PropTypes.string,
 };
 
 export default DashMaplibre;
