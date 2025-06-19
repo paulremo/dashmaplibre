@@ -238,7 +238,7 @@ const DashMaplibre = ({
                 if (!layer.hover_html) {return;}
                 const layerId = layer.id;
                 const h = handlers[layerId];
-                if (h && map.getLayer(layerId)) {
+                if (h && mapRef.current && mapRef.current.style && map.getLayer(layerId)) {
                     map.off('mouseenter', layerId, h.onMouseEnter);
                     map.off('mouseleave', layerId, h.onMouseLeave);
                 }
@@ -359,7 +359,7 @@ const DashMaplibre = ({
                 if (!layer.send_click) {return;}
                 const layerId = layer.id;
                 const handler = handlers[layerId];
-                if (handler && map.getLayer(layerId)) {
+                if (handler && mapRef.current && mapRef.current.style && map.getLayer(layerId)) {
                     map.off('click', layerId, handler);
                 }
             });
