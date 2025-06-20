@@ -240,8 +240,8 @@ const DashMaplibre = ({
                 let html;
                 if (typeof closestLayer.hover_html === "function") {
                     html = closestLayer.hover_html(closestFeature);
-                } else if (typeof interpolateTemplate === "function") {
-                    html = interpolateTemplate(closestLayer.hover_html, closestFeature);
+                } else if (typeof interpolateTemplate === "function" && closestFeature.properties) {
+                    html = interpolateTemplate(closestLayer.hover_html, closestFeature.properties);
                 } else {
                     html = closestLayer.hover_html;
                 }
