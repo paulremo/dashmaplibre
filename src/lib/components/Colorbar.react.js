@@ -151,12 +151,8 @@ const Colorbar = ({
         let labelPositions = [];
         if (labels && Object.keys(labels).length > 0) {
             // Use explicit labels
-            labelValues = Object.keys(labels).map(Number).sort((a, b) => a - b);
-            // Place at their relative positions along the bar
-            const stopsArr = Object.keys(stops).map(Number).sort((a, b) => a - b);
-            const min = stopsArr[0];
-            const max = stopsArr[stopsArr.length - 1];
-            labelPositions = labelValues.map(v => (v - min) / (max - min));
+            labelPositions = Object.keys(labels).map(Number).sort((a, b) => a - b)
+            labelValues = labelPositions.map(pos => labels[pos]);
         } else {
             // Dynamically determine number of labels based on available width
             const stopsArr = Object.keys(stops).map(Number).sort((a, b) => a - b);
