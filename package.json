@@ -1,6 +1,6 @@
 {
   "name": "dash_maplibre",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "A project for a custom dash component exposing maplibre",
   "main": "build/index.js",
   "scripts": {

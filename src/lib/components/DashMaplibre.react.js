@@ -198,55 +198,91 @@ const DashMaplibre = ({
     useEffect(() => {
         if (!mapRef.current) {return;}
         const map = mapRef.current;
-        const popups = {};
-        const handlers = {};
+        let popup = null;
+        let lastFeatureId = null;
 
-        layers.forEach(layer => {
-            if (!layer.hover_html) {return;}
-            const layerId = layer.id;
-            const hoverHtml = layer.hover_html;
+        // Collect all layer ids with hover_html
+        const hoverLayers = layers.filter(l => l.hover_html).map(l => l.id);
 
-            function onMouseEnter(e) {
-                const feature = e.features[0];
-                map.getCanvas().style.cursor = 'pointer';
-                const props = feature.properties;
-                const html = interpolateTemplate(hoverHtml, props);
-                if (!popups[layerId]) {
-                    popups[layerId] = new maplibregl.Popup({ closeButton: false, closeOnClick: false});
+        function onMouseMove(e) {
+            const fuzz = 8;
+            const bbox = [
+                [e.point.x - fuzz, e.point.y - fuzz],
+                [e.point.x + fuzz, e.point.y + fuzz]
+            ];
+            // Query all hoverable layers at once
+            const features = map.queryRenderedFeatures(bbox, { layers: hoverLayers });
+
+            if (features.length > 0) {
+                // Find the feature closest to the mouse pointer
+                let minDist = Infinity;
+                let closestFeature = null;
+                let closestLayer = null;
+                for (const feature of features) {
+                    const coords = feature.geometry.coordinates;
+                    // Project feature coordinates to screen point
+                    const screen = map.project(Array.isArray(coords[0]) ? coords[0] : coords);
+                    const dx = e.point.x - screen.x;
+                    const dy = e.point.y - screen.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    if (dist < minDist) {
+                        minDist = dist;
+                        closestFeature = feature;
+                    }
                 }
-                popups[layerId]
-                    .setLngLat(feature.geometry.coordinates)
+                // Find the corresponding layer definition
+                closestLayer = layers.find(l => l.id === closestFeature.layer.id);
+
+                // Only update popup if feature changed or moved
+                if (!popup) {
+                    popup = new maplibregl.Popup({ closeButton: false, closeOnClick: false });
+                }
+                let html;
+                if (typeof closestLayer.hover_html === "function") {
+                    html = closestLayer.hover_html(closestFeature);
+                } else if (typeof interpolateTemplate === "function") {
+                    html = interpolateTemplate(closestLayer.hover_html, closestFeature);
+                } else {
+                    html = closestLayer.hover_html;
+                }
+                popup
+                    .setLngLat(closestFeature.geometry.coordinates)
                     .setHTML(html)
                     .addTo(map);
-            }
-            function onMouseLeave() {
-                map.getCanvas().style.cursor = '';
-                if (popups[layerId]) {
-                    popups[layerId].remove();
+                map.getCanvas().style.cursor = 'pointer';
+                lastFeatureId = closestFeature.id;
+            } else {
+                // Remove popup if no feature is close
+                if (popup) {
+                    popup.remove();
+                    popup = null;
+                    lastFeatureId = null;
                 }
+                map.getCanvas().style.cursor = '';
             }
-            handlers[layerId] = { onMouseEnter, onMouseLeave };
-            if (map.getLayer(layerId)) {
-                map.on('mouseenter', layerId, onMouseEnter);
-                map.on('mouseleave', layerId, onMouseLeave);
+        }
+
+        // Remove popup when mouse leaves the map
+        function onMapMouseLeave() {
+            if (popup) {
+                popup.remove();
+                popup = null;
+                lastFeatureId = null;
             }
-        });
+            map.getCanvas().style.cursor = '';
+        }
+
+        map.on('mousemove', onMouseMove);
+        map.getCanvas().addEventListener('mouseleave', onMapMouseLeave);
 
         // Cleanup
         return () => {
-            layers.forEach(layer => {
-                if (!layer.hover_html) {return;}
-                const layerId = layer.id;
-                const h = handlers[layerId];
-                if (h && mapRef.current && mapRef.current.style && map.getLayer(layerId)) {
-                    map.off('mouseenter', layerId, h.onMouseEnter);
-                    map.off('mouseleave', layerId, h.onMouseLeave);
-                }
-                if (popups[layerId]) {
-                    popups[layerId].remove();
-                    delete popups[layerId];
-                }
-            });
+            map.off('mousemove', onMouseMove);
+            map.getCanvas().removeEventListener('mouseleave', onMapMouseLeave);
+            if (popup) {
+                popup.remove();
+                popup = null;
+            }
         };
     }, [layers, sources, styleLoaded]);
 
