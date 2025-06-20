@@ -12,8 +12,7 @@ const RANDOM_STRING_BASE = 36;
 const RANDOM_STRING_LENGTH = 9;
 const LABEL_FONT_SIZE = 12;
 const TITLE_FONT_SIZE = 14;
-const LABEL_POSITION_DECIMALS = 4;
-const MIN_LABEL_SPACING = 200;
+const MIN_LABEL_SPACING = 100;
 
 
 function formatValueWithMath(val, format) {
@@ -45,6 +44,13 @@ function formatValueWithMath(val, format) {
             return val.toString();
         }
     }
+}
+
+// Helper: get equally spaced positions for n labels (0 to 1)
+function getAutoLabelPositions(numLabels) {
+    if (numLabels === 1) {return [0.5];}
+    if (numLabels <= 0) {return [];}
+    return Array.from({ length: numLabels }, (_, i) => i / (numLabels - 1));
 }
 
 
@@ -140,26 +146,38 @@ const Colorbar = ({
             .style("stroke", "var(--mantine-color-dark-6)")
             .style("stroke-width", 1);
 
-        // Draw labels (auto or provided)
-        let labelEntries = Object.entries(labels || {});
-        if (labelEntries.length === 0) {
-            const maxLabels = Math.max(2, Math.floor(width / MIN_LABEL_SPACING));
-            const step = Math.max(1, Math.ceil(entries.length / maxLabels));
-            labelEntries = entries
-                .filter((_, i) => i % step === 0 || i === entries.length - 1)
-                .map(([v]) => {
-                    const p = (scale(v) / width).toFixed(LABEL_POSITION_DECIMALS);
-                    // Format value if format is provided
-                    let labelText = v.toString();
-                    if (format) {
-                        labelText = formatValueWithMath(v, format);
-                    }
-                    return [p, labelText];
-                });
+        // Determine label values and positions
+        let labelValues = [];
+        let labelPositions = [];
+        if (labels && Object.keys(labels).length > 0) {
+            // Use explicit labels
+            labelValues = Object.keys(labels).map(Number).sort((a, b) => a - b);
+            // Place at their relative positions along the bar
+            const stopsArr = Object.keys(stops).map(Number).sort((a, b) => a - b);
+            const min = stopsArr[0];
+            const max = stopsArr[stopsArr.length - 1];
+            labelPositions = labelValues.map(v => (v - min) / (max - min));
+        } else {
+            // Dynamically determine number of labels based on available width
+            const stopsArr = Object.keys(stops).map(Number).sort((a, b) => a - b);
+            const min = stopsArr[0];
+            const max = stopsArr[stopsArr.length - 1];
+
+            // Example: minimum MIN_LABEL_SPACING per label, max 7 labels
+            const minLabelSpacing = MIN_LABEL_SPACING;
+            const maxLabels = 7;
+            const numLabels = Math.max(2, Math.min(
+                maxLabels,
+                Math.floor(width / minLabelSpacing)
+            ));
+
+            labelPositions = getAutoLabelPositions(numLabels);
+            labelValues = labelPositions.map(p => min + p * (max - min));
         }
 
-        labelEntries.forEach(([pos, text]) => {
-            const p = Math.max(0, Math.min(1, parseFloat(pos)));
+        // Draw labels (auto or provided)
+        labelValues.forEach((v, i) => {
+            const p = labelPositions[i];
             const xpos = p * width;
             let anchor = "middle";
             if (p <= LABEL_ALIGN_BUFFER) {anchor = "start";}
@@ -171,7 +189,7 @@ const Colorbar = ({
                 .attr("font-size", LABEL_FONT_SIZE)
                 .attr("fill", "var(--mantine-color-text)")
                 .attr("dominant-baseline", "middle")
-                .text(text);
+                .text(formatValueWithMath(v, format));
         });
 
         // Title
