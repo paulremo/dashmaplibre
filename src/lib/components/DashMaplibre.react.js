@@ -2,6 +2,7 @@
 import React, { useRef, useEffect, useState } from "react";
 import PropTypes from "prop-types";
 import maplibregl from "maplibre-gl";
+import './DashMaplibre.css';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import Colorbar from './Colorbar.react.js';
 
@@ -235,7 +236,7 @@ const DashMaplibre = ({
 
                 // Only update popup if feature changed or moved
                 if (!popup) {
-                    popup = new maplibregl.Popup({ closeButton: false, closeOnClick: false });
+                    popup = new maplibregl.Popup({ closeButton: false, closeOnClick: false});
                 }
                 let html;
                 if (typeof closestLayer.hover_html === "function") {
