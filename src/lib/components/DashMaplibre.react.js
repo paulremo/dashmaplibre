@@ -171,6 +171,10 @@ const DashMaplibre = ({
 
         // Add app layers whose source exists and which are not already on the map
         layers.forEach((layer, idx) => {
+            if (Object.keys(layer).length === 0) {
+                // Empty layer definition, skip
+                return;
+            }
             const sourceExists = Boolean(map.getSource(layer.source));
             if (!sourceExists) {
                 console.warn("[DashMaplibre] Not adding app layer (missing source):", layer.id, "source:", layer.source);
@@ -236,7 +240,7 @@ const DashMaplibre = ({
 
                 // Only update popup if feature changed or moved
                 if (!popup) {
-                    popup = new maplibregl.Popup({ closeButton: false, closeOnClick: false});
+                    popup = new maplibregl.Popup({ closeButton: false, closeOnClick: false, className: "dash-maplibre-popup" });
                 }
                 let html;
                 if (typeof closestLayer.hover_html === "function") {

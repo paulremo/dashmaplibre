@@ -3,9 +3,20 @@ from dash import html, dcc, Output, Input, State, Patch, ctx
 from dash.exceptions import PreventUpdate
 from dash_maplibre import DashMaplibre
 import dash_mantine_components as dmc
+import requests
 
 app = dash.Dash(__name__)
 dash._dash_renderer._set_react_version("18.2.0")
+
+def get_basemap(scheme):
+    """Loads the basemap from the Carto server and modifies it, returning a Maplibre mapstyle object."""
+    if scheme == "light":
+        basemap = "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json"
+    else:
+        basemap = "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json"
+    response = requests.get(basemap)
+
+    return response.json()
 
 # The initial GeoJSON with a single point
 base_geojson = {
@@ -76,6 +87,7 @@ app.layout = dmc.MantineProvider(html.Div([
     html.Button("Change Circle Color", id="color-btn", n_clicks=0, style={"marginBottom": "1em"}),
     html.Button("Add Second Point Layer", id="add-layer-btn", n_clicks=0, style={"marginBottom": "1em", "marginLeft": "1em"}),
     html.Button("Set Center & Zoom", id="center-zoom-btn", n_clicks=0, style={"marginBottom": "1em", "marginLeft": "1em"}),
+    html.Button("Toggle basemap", id="toggle-basemap-btn", n_clicks=0, style={"marginBottom": "1em", "marginLeft": "1em"}),
     DashMaplibre(
         id="my-map",
         zoom=8,
@@ -97,7 +109,23 @@ app.layout = dmc.MantineProvider(html.Div([
         style={"width": "800px", "height": "500px"},
         version="my-test-version"
     )
-]), forceColorScheme="dark")
+]), id="main-provider", forceColorScheme="dark")
+
+# Toggle colorscheme callback
+@app.callback(
+    Output("my-map", "basemap", allow_duplicate=True),
+    Input("toggle-basemap-btn", "n_clicks"),
+    State("my-map", "basemap"),
+    prevent_initial_call=True
+)
+def toggle_scheme(n_clicks, current_scheme):
+    if n_clicks is None:
+        raise PreventUpdate
+    if n_clicks % 2 == 0:
+        return get_basemap("light")
+    else:
+        return get_basemap("dark")
+    
 
 # Update coordinates, color, and add layer
 @app.callback(
