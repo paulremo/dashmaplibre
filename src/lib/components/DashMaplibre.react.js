@@ -370,6 +370,7 @@ const DashMaplibre = ({
         if (!mapRef.current) {return;}
         const map = mapRef.current;
         const handlers = {};
+        const clickableLayerIds = layers.filter(layer => layer.send_click).map(layer => layer.id);
 
         layers.forEach(layer => {
             if (!layer.send_click) {return;}
@@ -393,6 +394,23 @@ const DashMaplibre = ({
                 map.on('click', layerId, onLayerClick);
             }
         });
+
+        // Global fallback click handler (only if no layer was hit)
+        function onMapClick(e) {
+            const features = map.queryRenderedFeatures(e.point, {
+                layers: clickableLayerIds
+            });
+
+            if (setProps && (!features || features.length === 0)) {
+                setProps({
+                    clickData: {
+                        layer: null,
+                        features: []
+                    }
+                });
+            }
+        }
+        map.on('click', onMapClick);
 
         // Cleanup
         return () => {
