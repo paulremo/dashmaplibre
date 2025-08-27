@@ -145,6 +145,22 @@ const DashMaplibre = ({
         if (!mapRef.current || !styleLoaded) {return;}
         const map = mapRef.current;
         Object.entries(sources).forEach(([id, src]) => {
+            // Safety: skip empty or invalid geojson sources
+            if (
+                src &&
+                src.type === "geojson" &&
+                (
+                    !src.data ||
+                    typeof src.data !== "object" ||
+                    Object.keys(src.data).length === 0 ||
+                    !src.data.type
+                )
+            ) {
+                // Skip invalid/empty geojson
+                return;
+            }
+
+            // Add source if missing, or update data if geojson source already exists
             if (!map.getSource(id)) {
                 try { map.addSource(id, src); } catch (err) {
                 console.error(err);
