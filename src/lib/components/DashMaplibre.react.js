@@ -1,5 +1,5 @@
 /* eslint-disable consistent-return */
-import React, { useRef, useEffect, useState } from "react";
+import React, { useRef, useEffect, useState, useLayoutEffect } from "react";
 import PropTypes from "prop-types";
 import maplibregl from "maplibre-gl";
 import './DashMaplibre.css';
@@ -101,6 +101,7 @@ const DashMaplibre = ({
 
     // 1. Initialize map only once
     useEffect(() => {
+        console.log("Initializing MapLibre map");
         if (!mapRef.current) {
             mapRef.current = new maplibregl.Map({
                 container: mapContainer.current,
@@ -122,27 +123,27 @@ const DashMaplibre = ({
     }, []);
 
     // 2. Handle basemap (style) changes
-    useEffect(() => {
+    useLayoutEffect(() => {
         if (!mapRef.current) {return;}
+
+        console.log("Updating basemap/style");
         const map = mapRef.current;
         setStyleLoaded(false);
         prevLayersRef.current = [];
 
         function onIdle() {
+            console.log("Basemap/style loaded");
             setStyleLoaded(true);
-            map.off('idle', onIdle);
         }
-        map.on('idle', onIdle);
+        map.once('idle', onIdle);
         map.setStyle(basemap);
-
-        return () => {
-            map.off('idle', onIdle);
-        };
     }, [basemap]);
 
     // 3. Add/update sources after style is loaded
     useEffect(() => {
         if (!mapRef.current || !styleLoaded) {return;}
+
+        console.log("Updating sources");
         const map = mapRef.current;
         Object.entries(sources).forEach(([id, src]) => {
             // Safety: skip empty or invalid geojson sources
@@ -166,6 +167,7 @@ const DashMaplibre = ({
                 console.error(err);
             }
             } else if (src.type === "geojson") {
+                console.log("Updating geojson source data for:", id);
                 map.getSource(id).setData(src.data);
             }
         });
@@ -174,6 +176,8 @@ const DashMaplibre = ({
     // 4. Add/remove/update app layers after style and sources are ready
     useEffect(() => {
         if (!mapRef.current || !styleLoaded) {return;}
+
+        console.log("Updating layers");
         const map = mapRef.current;
 
         // Remove app layers whose source is missing or which are no longer in the layers prop
@@ -213,14 +217,29 @@ const DashMaplibre = ({
 
         // Update prevLayersRef to only track app layers
         prevLayersRef.current = layers.slice();
+
+        // Jump to savedViewRef
+        map.jumpTo({
+            center: savedViewRef.current.center,
+            zoom: savedViewRef.current.zoom,
+            bearing: 0,
+            pitch: 0,
+        })
+
+        // Dispatch a DOM event to signal that layers have been updated
+        const event = new CustomEvent('layers-updated', {
+            detail: { message: 'Layers have been updated' },
+        });
+        window.dispatchEvent(event);
     }, [layers, sources, styleLoaded]);
 
     // 5. Hover popups for layers with hover_html
     useEffect(() => {
         if (!mapRef.current) {return;}
+        
+        console.log("Setting up hover popups");
         const map = mapRef.current;
         let popup = null;
-        let lastFeatureId = null;
 
         // Collect all layer ids with hover_html
         const hoverLayers = layers.filter(l => l.hover_html).map(l => l.id);
@@ -271,13 +290,11 @@ const DashMaplibre = ({
                     .setHTML(html)
                     .addTo(map);
                 map.getCanvas().style.cursor = 'pointer';
-                lastFeatureId = closestFeature.id;
             } else {
                 // Remove popup if no feature is close
                 if (popup) {
                     popup.remove();
                     popup = null;
-                    lastFeatureId = null;
                 }
                 map.getCanvas().style.cursor = '';
             }
@@ -288,7 +305,6 @@ const DashMaplibre = ({
             if (popup) {
                 popup.remove();
                 popup = null;
-                lastFeatureId = null;
             }
             map.getCanvas().style.cursor = '';
         }
@@ -310,6 +326,8 @@ const DashMaplibre = ({
     // 6. Camera updates
     useEffect(() => {
         if (!mapRef.current) {return;}
+
+        console.log("Updating camera view");
         const map = mapRef.current;
         if (center && typeof zoom === "number") {
             savedViewRef.current = { center, zoom };
@@ -329,11 +347,13 @@ const DashMaplibre = ({
         if (typeof pitch === "number" && map.getPitch() !== pitch) {
             map.setPitch(pitch);
         }
-    }, [center, zoom, bearing, pitch, layers, sources]);
+    }, [center, zoom, bearing, pitch]);
 
     // 7. Layer visibility toggling
     useEffect(() => {
         if (!mapRef.current) {return;}
+
+        console.log("Updating layer visibility");
         layers.forEach(layer => {
             if (!layer.display_name) {return;}
             if (mapRef.current.getLayer(layer.id)) {
@@ -348,6 +368,7 @@ const DashMaplibre = ({
 
     // 8. Sync visibleLayers state with layers prop
     useEffect(() => {
+        console.log("Syncing visibleLayers state with layers prop");
         const validIds = layers.filter(l => l.display_name).map(l => l.id);
         setVisibleLayers(vs => {
             if (
@@ -363,6 +384,8 @@ const DashMaplibre = ({
     // 9. Double-click to restore view
     useEffect(() => {
         if (!mapRef.current) {return;}
+
+        console.log("Setting up double-click to restore view");
         const map = mapRef.current;
         map.doubleClickZoom.disable();
         function handleDblClick(_e) {
@@ -384,6 +407,8 @@ const DashMaplibre = ({
     // 10. Handle layer clicks
     useEffect(() => {
         if (!mapRef.current) {return;}
+
+        console.log("Setting up layer click handlers");
         const map = mapRef.current;
         const handlers = {};
         const clickableLayerIds = layers.filter(layer => layer.send_click).map(layer => layer.id);
@@ -608,6 +633,8 @@ const DashMaplibre = ({
     // 13. Listen for zoom changes on the map
     useEffect(() => {
         if (!mapRef.current) {return;}
+        
+        console.log("Setting up zoom listener");
         const map = mapRef.current;
         function onZoom() {
             setCurrentZoom(map.getZoom());
