@@ -3,7 +3,7 @@ module DashMaplibre
 using Dash
 
 const resources_path = realpath(joinpath( @__DIR__, "..", "deps"))
-const version = "0.0.14"
+const version = "0.0.15"
 
 include("jl/''_colorbar.jl")
 include("jl/''_dashmaplibre.jl")
