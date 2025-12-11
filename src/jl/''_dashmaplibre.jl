@@ -27,6 +27,17 @@ highest zoom key less than or equal to the current zoom will be shown.. colorbar
 Those elements have the following types:
 
 - `colorbar_risk` (Dict; optional): Configuration for the colorbar legend for risk visualization.
+- `feature_state` (Dict; optional): Feature state to apply to map sources.
+Structure:
+{
+  [sourceId]: {
+    [sourceLayerId]: {
+      [stateKey]: {
+        [featureId]: any
+      }
+    }
+  }
+}
 - `layers` (Array; optional): The array of MapLibre layer definitions to display on the map.
 - `max_bounds` (Array; optional): The maximum bounds of the map as [[west, south], [east, north]].
 - `pitch` (Real; optional): The pitch (tilt) of the map in degrees.
@@ -36,7 +47,7 @@ Those elements have the following types:
 - `zoom` (Real; optional): The zoom level of the map.
 """
 function ''_dashmaplibre(; kwargs...)
-        available_props = Symbol[:id, :basemap, :bearing, :center, :colorbar_map, :colorbar_risk, :layers, :max_bounds, :pitch, :sources, :style, :version, :zoom]
+        available_props = Symbol[:id, :basemap, :bearing, :center, :colorbar_map, :colorbar_risk, :feature_state, :layers, :max_bounds, :pitch, :sources, :style, :version, :zoom]
         wild_props = Symbol[]
         return Component("''_dashmaplibre", "DashMaplibre", "dash_maplibre", available_props, wild_props; kwargs...)
 end

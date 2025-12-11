@@ -87,6 +87,7 @@ const DashMaplibre = ({
     colorbar_risk = null,
     setProps,
     version = "",
+    feature_state = null,
     ...otherProps
 }) => {
     const mapContainer = useRef(null);
@@ -232,6 +233,79 @@ const DashMaplibre = ({
         });
         window.dispatchEvent(event);
     }, [layers, sources, styleLoaded]);
+
+    // 4b. Apply feature-state once style and sources are ready
+    useEffect(() => {
+        if (!mapRef.current || !styleLoaded || !feature_state) { return; }
+
+        console.log("Applying feature_state");
+        const map = mapRef.current;
+
+        try {
+            Object.entries(feature_state).forEach(([sourceId, layersForSource]) => {
+                if (!map.getSource(sourceId)) {
+                    console.warn("[DashMaplibre] feature_state: source missing:", sourceId);
+                    return;
+                }
+
+                // layersForSource: { [sourceLayerId]: { [stateKey]: { [featureId]: value } } }
+                Object.entries(layersForSource || {}).forEach(([sourceLayerId, stateMap]) => {
+                    // stateMap: { [stateKey]: { [featureId]: value } }
+                    Object.entries(stateMap || {}).forEach(([stateKey, featuresMap]) => {
+                        // featuresMap: { [featureId]: value }
+                        Object.entries(featuresMap || {}).forEach(([featureId, value]) => {
+                            // Convention: null/undefined => clear this key for this feature
+                            if (value === null || typeof value === "undefined") {
+                                try {
+                                    map.removeFeatureState(
+                                        {
+                                            source: sourceId,
+                                            sourceLayer: sourceLayerId,
+                                            id: featureId
+                                        },
+                                        stateKey
+                                    );
+                                } catch (err) {
+                                    console.warn(
+                                        "removeFeatureState failed",
+                                        sourceId,
+                                        sourceLayerId,
+                                        featureId,
+                                        stateKey,
+                                        err
+                                    );
+                                }
+                                return;
+                            }
+
+                            try {
+                                map.setFeatureState(
+                                    {
+                                        source: sourceId,
+                                        sourceLayer: sourceLayerId,
+                                        id: featureId
+                                    },
+                                    { [stateKey]: value }
+                                );
+                            } catch (err) {
+                                console.warn(
+                                    "setFeatureState failed",
+                                    sourceId,
+                                    sourceLayerId,
+                                    featureId,
+                                    stateKey,
+                                    err
+                                );
+                            }
+                        });
+                    });
+                });
+            });
+        } catch (err) {
+            console.error("Error applying feature_state", err);
+        }
+    }, [feature_state, sources, layers, styleLoaded]);
+
 
     // 5. Hover popups for layers with hover_html
     useEffect(() => {
@@ -772,6 +846,21 @@ DashMaplibre.propTypes = {
      * Optional version string to display in the lower right corner of the legend.
      */
     version: PropTypes.string,
+    
+    /**
+     * Feature state to apply to map sources.
+     * Structure:
+     * {
+     *   [sourceId]: {
+     *     [sourceLayerId]: {
+     *       [stateKey]: {
+     *         [featureId]: any
+     *       }
+     *     }
+     *   }
+     * }
+     */
+    feature_state: PropTypes.object,
 };
 
 export default DashMaplibre;

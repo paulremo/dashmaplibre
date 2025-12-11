@@ -11,9 +11,9 @@ DashMaplibre is a React component for displaying interactive maps using MapLibre
 
 \usage{
 ''DashMaplibre(id=NULL, basemap=NULL, bearing=NULL, center=NULL,
-colorbar_map=NULL, colorbar_risk=NULL, layers=NULL,
-max_bounds=NULL, pitch=NULL, sources=NULL, style=NULL,
-version=NULL, zoom=NULL)
+colorbar_map=NULL, colorbar_risk=NULL, feature_state=NULL,
+layers=NULL, max_bounds=NULL, pitch=NULL, sources=NULL,
+style=NULL, version=NULL, zoom=NULL)
 }
 
 \arguments{
@@ -34,6 +34,18 @@ Can be a single colorbar config object, or a dictionary where keys are zoom leve
 highest zoom key less than or equal to the current zoom will be shown.}
 
 \item{colorbar_risk}{Named list. Configuration for the colorbar legend for risk visualization.}
+
+\item{feature_state}{Named list. Feature state to apply to map sources.
+Structure:
+{
+  [sourceId]: {
+    [sourceLayerId]: {
+      [stateKey]: {
+        [featureId]: any
+      }
+    }
+  }
+}}
 
 \item{layers}{Unnamed list. The array of MapLibre layer definitions to display on the map.}
 

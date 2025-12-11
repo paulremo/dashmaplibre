@@ -57,6 +57,11 @@ Keyword arguments:
 - colorbar_risk (dict; optional):
     Configuration for the colorbar legend for risk visualization.
 
+- feature_state (dict; optional):
+    Feature state to apply to map sources.  Structure:  {
+    [sourceId]: {      [sourceLayerId]: {        [stateKey]: {
+    [featureId]: any        }      }    }  }.
+
 - layers (list; optional):
     The array of MapLibre layer definitions to display on the map.
 
@@ -103,11 +108,12 @@ Keyword arguments:
         colorbar_map: typing.Optional[typing.Union[dict, "ColorbarMap"]] = None,
         colorbar_risk: typing.Optional[dict] = None,
         version: typing.Optional[str] = None,
+        feature_state: typing.Optional[dict] = None,
         **kwargs
     ):
-        self._prop_names = ['id', 'basemap', 'bearing', 'center', 'colorbar_map', 'colorbar_risk', 'layers', 'max_bounds', 'pitch', 'sources', 'style', 'version', 'zoom']
+        self._prop_names = ['id', 'basemap', 'bearing', 'center', 'colorbar_map', 'colorbar_risk', 'feature_state', 'layers', 'max_bounds', 'pitch', 'sources', 'style', 'version', 'zoom']
         self._valid_wildcard_attributes =            []
-        self.available_properties = ['id', 'basemap', 'bearing', 'center', 'colorbar_map', 'colorbar_risk', 'layers', 'max_bounds', 'pitch', 'sources', 'style', 'version', 'zoom']
+        self.available_properties = ['id', 'basemap', 'bearing', 'center', 'colorbar_map', 'colorbar_risk', 'feature_state', 'layers', 'max_bounds', 'pitch', 'sources', 'style', 'version', 'zoom']
         self.available_wildcard_properties =            []
         _explicit_args = kwargs.pop('_explicit_args')
         _locals = locals()
