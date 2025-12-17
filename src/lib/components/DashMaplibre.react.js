@@ -6,6 +6,9 @@ import './DashMaplibre.css';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import Colorbar from './Colorbar.react.js';
 
+const DEFAULT_LAYERS = [];
+const DEFAULT_SOURCES = {};
+
 const EMPTY_BASEMAP = {
   version: 8,
   name: "Empty",
@@ -81,8 +84,8 @@ const DashMaplibre = ({
     bearing = 0,
     pitch = 0,
     sources = {},
-    layers = [],
-    style = {},
+    layers = DEFAULT_LAYERS,
+    style = DEFAULT_SOURCES,
     colorbar_map = null,
     colorbar_risk = null,
     setProps,
