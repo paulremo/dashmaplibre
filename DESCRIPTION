@@ -1,6 +1,6 @@
 Package: dashMaplibre
 Title: A project for a custom dash component exposing maplibre
-Version: 0.0.18
+Version: 0.0.19
 Description: A project for a custom dash component exposing maplibre
 Depends: R (>= 3.0.2)
 Imports: 

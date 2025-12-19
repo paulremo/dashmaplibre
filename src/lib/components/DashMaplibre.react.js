@@ -327,8 +327,9 @@ const DashMaplibre = ({
                 [e.point.x - fuzz, e.point.y - fuzz],
                 [e.point.x + fuzz, e.point.y + fuzz]
             ];
-            // Query all hoverable layers at once
-            const features = map.queryRenderedFeatures(bbox, { layers: hoverLayers });
+            // Query existing hoverable layers at once
+            const existing = hoverLayers.filter((id) => Boolean(map.getLayer(id)));
+            const features = map.queryRenderedFeatures(bbox, { layers: existing });
 
             if (features.length > 0) {
                 // Find the feature closest to the mouse pointer
@@ -515,8 +516,9 @@ const DashMaplibre = ({
 
         // Global fallback click handler (only if no layer was hit)
         function onMapClick(e) {
+            const existing = clickableLayerIds.filter((id) => Boolean(map.getLayer(id)));
             const features = map.queryRenderedFeatures(e.point, {
-                layers: clickableLayerIds
+                layers: existing
             });
 
             if (setProps && (!features || features.length === 0)) {
