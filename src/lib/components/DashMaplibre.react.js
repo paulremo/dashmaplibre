@@ -222,14 +222,6 @@ const DashMaplibre = ({
         // Update prevLayersRef to only track app layers
         prevLayersRef.current = layers.slice();
 
-        // Jump to savedViewRef
-        map.jumpTo({
-            center: savedViewRef.current.center,
-            zoom: savedViewRef.current.zoom,
-            bearing: 0,
-            pitch: 0,
-        })
-
         // Dispatch a DOM event to signal that layers have been updated
         const event = new CustomEvent('layers-updated', {
             detail: { message: 'Layers have been updated' },
@@ -410,14 +402,14 @@ const DashMaplibre = ({
         if (center && typeof zoom === "number") {
             savedViewRef.current = { center, zoom };
         }
+        if (typeof zoom === "number" && map.getZoom() !== zoom) {
+            map.setZoom(zoom);
+        }
         if (center) {
             const curr = map.getCenter();
             if (curr.lng !== center[0] || curr.lat !== center[1]) {
                 map.setCenter(center);
             }
-        }
-        if (typeof zoom === "number" && map.getZoom() !== zoom) {
-            map.setZoom(zoom);
         }
         if (typeof bearing === "number" && map.getBearing() !== bearing) {
             map.setBearing(bearing);
