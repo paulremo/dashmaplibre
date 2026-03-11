@@ -116,6 +116,15 @@ const DashMaplibre = ({
                 maxBounds: max_bounds,
                 ...otherProps
             });
+            // Add compass control (reset north button)
+            mapRef.current.addControl(
+                new maplibregl.NavigationControl({
+                    showCompass: true,
+                    showZoom: false,
+                    visualizePitch: true
+                }),
+                "bottom-left"
+            );
             window._map = mapRef.current;
         }
         return () => {

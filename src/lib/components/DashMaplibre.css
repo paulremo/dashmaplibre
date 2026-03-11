@@ -1,0 +1,28 @@
+.dash-maplibre-popup .maplibregl-popup-content {
+    background: var(--mantine-color-body);
+}
+
+/* Default to all transparent first */
+.maplibregl-popup-tip {
+  border-color: transparent !important;
+}
+
+/* Downward-pointing popup (tip is on top, visible border is BOTTOM) */
+.maplibregl-popup-anchor-bottom .maplibregl-popup-tip {
+  border-top-color: var(--mantine-color-body) !important;
+}
+
+/* Upward-pointing popup (tip is on bottom) */
+.maplibregl-popup-anchor-top .maplibregl-popup-tip {
+  border-bottom-color: var(--mantine-color-body) !important;
+}
+
+/* Right-pointing popup (tip is on left) */
+.maplibregl-popup-anchor-left .maplibregl-popup-tip {
+  border-right-color: var(--mantine-color-body) !important;
+}
+
+/* Left-pointing popup (tip is on right) */
+.maplibregl-popup-anchor-right .maplibregl-popup-tip {
+  border-left-color: var(--mantine-color-body) !important;
+}
